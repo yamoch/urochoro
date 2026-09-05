@@ -45,7 +45,6 @@
         position: absolute;
         top: 0;
         left: 0;
-        cursor: crosshair;
         background: transparent;
         z-index: 2;
       }
@@ -455,7 +454,7 @@
 
       .draw-mode-switch {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 4px;
         margin-bottom: 4px;
         padding: 2px;
@@ -516,10 +515,24 @@
         border-color: var(--espresso);
       }
 
+      /* 追加: カーソルアイコンのクラス */
+      .pen-cursor {
+        cursor:
+          url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>')
+            2 22,
+          crosshair !important;
+      }
+
+      .eraser-cursor {
+        cursor:
+          url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="black" stroke-width="1"/></svg>')
+            10 10,
+          auto !important;
+      }
+
       .fill-cursor {
         cursor:
-          url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23e8b7b1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11l-8-8-9 9 9 9 8-8z"></path><path d="M22 22l-5-5"></path></svg>')
-            0 24,
+            10 10,
           auto !important;
       }
 
@@ -611,6 +624,29 @@
         transform-origin: center bottom;
       }
 
+      .snack-item {
+        position: absolute;
+        width: 52px;
+        height: 52px;
+        font-size: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9998;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      @keyframes popIn {
+        0% {
+          transform: translate(-50%, -50%) scale(0);
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
       /* スマホ対応レスポンシブ調整 */
       @media (max-width: 768px) {
         #drawing-toolbar {
@@ -688,7 +724,7 @@
         }
         #hamburger-btn {
           top: 10px;
-          right: 60px;
+          right: 10px;
           width: 40px;
           height: 40px;
         }
@@ -727,7 +763,8 @@
 
     <!-- キャンバス背景＆描画キャンバス -->
     <div id="canvas-bg"></div>
-    <canvas id="draw-canvas"></canvas>
+    <!-- 初期状態はペンカーソルを設定 -->
+    <canvas id="draw-canvas" class="pen-cursor"></canvas>
 
     <div id="ui-layer">
       <aside
@@ -755,9 +792,7 @@
 
         <div class="toolbar-body" id="toolbar-body">
           <section class="tool-section" aria-labelledby="draw-tools-title">
-            <span id="draw-tools-title" class="tool-section-title"
-              >1. かく</span
-            >
+            <span id="draw-tools-title" class="tool-section-title">かく</span>
             <div
               class="draw-mode-switch"
               role="group"
@@ -770,6 +805,14 @@
                 aria-pressed="true"
               >
                 ペン
+              </button>
+              <button
+                id="eraser-btn"
+                class="draw-mode-btn"
+                type="button"
+                aria-pressed="false"
+              >
+                けしゴム
               </button>
               <button
                 id="fill-btn"
@@ -874,7 +917,7 @@
 
           <section class="tool-section" aria-labelledby="save-tools-title">
             <span id="save-tools-title" class="tool-section-title"
-              >2. ほぞんする</span
+              >ほぞんする</span
             >
             <div class="btn-container">
               <button id="save-btn">えを ほぞん</button>
@@ -893,20 +936,32 @@
 
           <section class="tool-section" aria-labelledby="play-tools-title">
             <span id="play-tools-title" class="tool-section-title"
-              >3. うごかす</span
+              >うごかす</span
             >
             <div class="btn-container">
               <button id="start-btn">みんな うごけ</button>
               <button id="stop-btn">とめる</button>
+              <!-- クラスに wide-btn を追加 -->
               <button id="screen-reset-btn" class="wide-btn">
                 がめんを リセット
               </button>
             </div>
           </section>
 
+          <section class="tool-section" aria-labelledby="snack-tools-title">
+            <span id="snack-tools-title" class="tool-section-title"
+              >おやつ</span
+            >
+            <div class="btn-container">
+              <button id="snack-mode-btn" class="wide-btn">
+                おやつをあげる
+              </button>
+            </div>
+          </section>
+
           <section class="tool-section" aria-labelledby="bg-tools-title">
             <span id="bg-tools-title" class="tool-section-title"
-              >4. はいけいを かえる</span
+              >はいけいを かえる</span
             >
             <div class="color-palette" aria-label="はいけいのいろをえらぶ">
               <button
@@ -1021,6 +1076,7 @@
       const stopBtn = document.getElementById("stop-btn");
       const screenResetBtn = document.getElementById("screen-reset-btn");
       const penBtn = document.getElementById("pen-btn");
+      const eraserBtn = document.getElementById("eraser-btn");
       const fillBtn = document.getElementById("fill-btn");
       const libraryContainer = document.getElementById("library-container");
       const colorBtns = document.querySelectorAll(".color-btn");
@@ -1081,8 +1137,28 @@
 
       let creatures = [];
       let currentColor = "#000000";
-      let isFillMode = false;
+      let drawMode = "pen"; // "pen", "eraser", "fill"
       let isPaused = false;
+
+      // おやつ機能の状態管理（複数個置けるように配列へ変更）
+      let snackModeActive = false;
+      const snackModeBtn = document.getElementById("snack-mode-btn");
+      let activeSnacks = []; // [{ x, y, element }]
+
+      snackModeBtn.addEventListener("click", () => {
+        snackModeActive = !snackModeActive;
+        if (snackModeActive) {
+          snackModeBtn.textContent = "おやつをあげる（ON）";
+          snackModeBtn.style.backgroundColor = "var(--terracotta)";
+          snackModeBtn.style.color = "var(--espresso)";
+        } else {
+          snackModeBtn.textContent = "おやつをあげる（OFF）";
+          snackModeBtn.style.backgroundColor = "var(--espresso)";
+          snackModeBtn.style.color = "var(--cream)";
+          activeSnacks.forEach((s) => s.element.remove());
+          activeSnacks = [];
+        }
+      });
 
       let undoStack = [];
       const maxUndoSteps = 20;
@@ -1337,8 +1413,10 @@
           colorBtns.forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
           currentColor = btn.getAttribute("data-color");
-          ctx.strokeStyle = currentColor;
-          ctx.fillStyle = currentColor;
+          if (drawMode === "pen") {
+            ctx.strokeStyle = currentColor;
+            ctx.fillStyle = currentColor;
+          }
         });
       });
 
@@ -1372,7 +1450,6 @@
           bgColorBtns.forEach((b) => b.classList.remove("active"));
         };
         reader.readAsDataURL(file);
-        // 同じファイルを再度選択できるようにリセット
         bgFileInput.value = "";
       });
 
@@ -1389,9 +1466,15 @@
         canvas.height = window.innerHeight;
 
         ctx.drawImage(tempCanvas, 0, 0);
-        ctx.strokeStyle = currentColor;
-        ctx.fillStyle = currentColor;
-        ctx.lineWidth = 6;
+
+        if (drawMode === "eraser") {
+          ctx.strokeStyle = "rgba(0,0,0,1)";
+          ctx.lineWidth = 20;
+        } else {
+          ctx.strokeStyle = currentColor;
+          ctx.fillStyle = currentColor;
+          ctx.lineWidth = 6;
+        }
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
@@ -1426,9 +1509,16 @@
         const pos = getEventPos(e);
         if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
 
+        // おやつモードONのときは画面タップでおやつを複数個置けるようにする
+        if (snackModeActive) {
+          e.preventDefault();
+          spawnSnack(pos.x, pos.y);
+          return;
+        }
+
         saveState();
 
-        if (isFillMode) {
+        if (drawMode === "fill") {
           e.preventDefault();
           floodFill(Math.floor(pos.x), Math.floor(pos.y), currentColor);
         } else {
@@ -1438,15 +1528,24 @@
       }
 
       function handleCanvasMove(e) {
-        if (!isDrawing || isFillMode) return;
+        if (!isDrawing || drawMode === "fill") return;
         e.preventDefault();
 
         const pos = getEventPos(e);
+
+        ctx.save();
+        if (drawMode === "eraser") {
+          ctx.globalCompositeOperation = "destination-out";
+        } else {
+          ctx.globalCompositeOperation = "source-over";
+          ctx.strokeStyle = currentColor;
+        }
 
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
+        ctx.restore();
 
         [lastX, lastY] = [pos.x, pos.y];
       }
@@ -1541,17 +1640,35 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       });
 
+      // 描画モード切替時のカーソルクラス変更
       penBtn.addEventListener("click", () => {
-        isFillMode = false;
+        drawMode = "pen";
         penBtn.classList.add("is-active");
+        eraserBtn.classList.remove("is-active");
         fillBtn.classList.remove("is-active");
-        canvas.classList.remove("fill-cursor");
+        canvas.classList.remove("fill-cursor", "eraser-cursor");
+        canvas.classList.add("pen-cursor");
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = currentColor;
+        ctx.fillStyle = currentColor;
+      });
+
+      eraserBtn.addEventListener("click", () => {
+        drawMode = "eraser";
+        eraserBtn.classList.add("is-active");
+        penBtn.classList.remove("is-active");
+        fillBtn.classList.remove("is-active");
+        canvas.classList.remove("fill-cursor", "pen-cursor");
+        canvas.classList.add("eraser-cursor");
+        ctx.lineWidth = 20;
       });
 
       fillBtn.addEventListener("click", () => {
-        isFillMode = true;
+        drawMode = "fill";
         fillBtn.classList.add("is-active");
         penBtn.classList.remove("is-active");
+        eraserBtn.classList.remove("is-active");
+        canvas.classList.remove("pen-cursor", "eraser-cursor");
         canvas.classList.add("fill-cursor");
       });
 
@@ -1570,7 +1687,7 @@
             if (alpha > 0) {
               if (x < minX) minX = x;
               if (x > maxX) maxX = x;
-              if (y < minY) minY = y;
+              if (y < minY) minY = minY = y;
               if (y > maxY) maxY = y;
               found = true;
             }
@@ -1786,6 +1903,21 @@
 
       let activeCreatures = [];
 
+      // おやつを複数個置けるように拡張した関数
+      function spawnSnack(x, y) {
+        const snacks = ["🍎", "🍪", "🍩", "🍓", "🍉", "🍬"];
+        const randomSnack = snacks[Math.floor(Math.random() * snacks.length)];
+
+        const el = document.createElement("div");
+        el.className = "snack-item";
+        el.textContent = randomSnack;
+        el.style.left = x + "px";
+        el.style.top = y + "px";
+        document.body.appendChild(el);
+
+        activeSnacks.push({ x, y, element: el });
+      }
+
       function spawnCreature(
         dataUrl,
         origWidth,
@@ -1800,19 +1932,23 @@
         creature.className = "wandering-creature";
 
         const baseSize = 90;
+        let scaleMultiplier = 1.0; // 育成要素による大きさ倍率
         let width, height;
-        if (origWidth >= origHeight) {
-          width = baseSize;
-          height = baseSize * (origHeight / origWidth);
-        } else {
-          height = baseSize;
-          width = baseSize * (origWidth / origHeight);
+
+        function updateSize() {
+          if (origWidth >= origHeight) {
+            width = baseSize * scaleMultiplier;
+            height = baseSize * (origHeight / origWidth) * scaleMultiplier;
+          } else {
+            height = baseSize * scaleMultiplier;
+            width = baseSize * (origWidth / origHeight) * scaleMultiplier;
+          }
+          creature.style.width = width + "px";
+          creature.style.height = height + "px";
         }
+        updateSize();
 
-        creature.style.width = width + "px";
-        creature.style.height = height + "px";
         creature.style.objectFit = "contain";
-
         document.body.appendChild(creature);
 
         let posX =
@@ -1881,6 +2017,48 @@
 
         function animate() {
           if (!creatureObj.isRunning) return;
+
+          // 複数あるおやつの中から最も近いものを探して引き寄せられる処理
+          if (activeSnacks.length > 0) {
+            let closestSnack = null;
+            let minDist = Infinity;
+
+            for (let snack of activeSnacks) {
+              const targetX = snack.x - width / 2;
+              const targetY = snack.y - height / 2;
+              const dist = Math.hypot(targetX - posX, targetY - posY);
+              if (dist < minDist) {
+                minDist = dist;
+                closestSnack = snack;
+              }
+            }
+
+            if (closestSnack) {
+              const targetX = closestSnack.x - width / 2;
+              const targetY = closestSnack.y - height / 2;
+              const dx = targetX - posX;
+              const dy = targetY - posY;
+              const dist = Math.hypot(dx, dy);
+
+              if (dist < 15) {
+                // おやつを食べた！ちょっと大きくなって、食べたおやつを削除する
+                scaleMultiplier = Math.min(2.5, scaleMultiplier + 0.15);
+                updateSize();
+                closestSnack.element.remove();
+                activeSnacks = activeSnacks.filter((s) => s !== closestSnack);
+              } else {
+                // おやつに向かって加速
+                const snackSpeed = 3.5;
+                speedX += (dx / dist) * 0.3;
+                speedY += (dy / dist) * 0.3;
+                const currentSpeed = Math.hypot(speedX, speedY);
+                if (currentSpeed > snackSpeed) {
+                  speedX = (speedX / currentSpeed) * snackSpeed;
+                  speedY = (speedY / currentSpeed) * snackSpeed;
+                }
+              }
+            }
+          }
 
           posX += speedX;
           posY += speedY;
@@ -2002,6 +2180,8 @@
         creatures.forEach((c) => c.remove());
         creatures = [];
         activeCreatures = [];
+        activeSnacks.forEach((s) => s.element.remove());
+        activeSnacks = [];
         if (isPaused) {
           isPaused = false;
           stopBtn.textContent = "とめる";
