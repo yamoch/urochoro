@@ -28,7 +28,6 @@
         user-select: none;
       }
 
-      /* キャンバスの背景画像・背景色用 */
       #canvas-bg {
         position: absolute;
         top: 0;
@@ -169,6 +168,7 @@
       .menu-btn:hover {
         background-color: var(--terracotta);
         border-color: var(--terracotta);
+        color: var(--espresso);
       }
 
       #close-menu-btn {
@@ -176,8 +176,9 @@
         color: var(--espresso);
       }
 
-      /* おとなようモード画面 / 一覧画面 */
-      #adult-mode-screen {
+      /* モーダル共通画面 */
+      #adult-mode-screen,
+      #battle-setup-screen {
         position: fixed;
         top: 0;
         left: 0;
@@ -193,7 +194,8 @@
         overflow-y: auto;
       }
 
-      #adult-mode-screen.open {
+      #adult-mode-screen.open,
+      #battle-setup-screen.open {
         display: flex;
       }
 
@@ -316,6 +318,10 @@
           padding 0.3s ease;
       }
 
+      #drawing-toolbar.battle-hidden {
+        display: none !important;
+      }
+
       .toolbar-body {
         display: flex;
         flex-direction: column;
@@ -324,7 +330,6 @@
         flex-grow: 1;
       }
 
-      /* ツールバー折りたたみ用トグルボタン（PC用） */
       #toggle-toolbar-btn {
         background-color: var(--terracotta);
         color: var(--espresso);
@@ -344,7 +349,6 @@
         justify-content: center;
         padding: 0;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-        -webkit-tap-highlight-color: transparent;
       }
 
       #drawing-toolbar.closed-pc {
@@ -359,7 +363,6 @@
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        z-index: 3200;
       }
 
       #drawing-toolbar.closed-pc .toolbar-body,
@@ -430,19 +433,18 @@
         transform: scale(0.95);
       }
 
-      button:focus-visible {
-        outline: 3px solid var(--terracotta);
-        outline-offset: 2px;
-      }
-
       #save-btn,
-      #start-btn {
+      #start-btn,
+      #battle-start-action-btn,
+      #retry-battle-btn {
         background-color: var(--terracotta);
         border-color: var(--terracotta);
         color: var(--espresso);
       }
       #save-btn:hover,
-      #start-btn:hover {
+      #start-btn:hover,
+      #battle-start-action-btn:hover,
+      #retry-battle-btn:hover {
         background-color: var(--espresso);
         border-color: var(--espresso);
         color: var(--cream);
@@ -497,10 +499,6 @@
         transition: transform 0.1s;
       }
 
-      .color-btn:active,
-      .bg-color-btn:active {
-        transform: scale(0.9);
-      }
       .color-btn.active,
       .bg-color-btn.active {
         border-color: var(--espresso);
@@ -510,12 +508,7 @@
       .bg-color-btn.white-color {
         border-color: rgba(74, 59, 50, 0.48);
       }
-      .color-btn.white-color.active,
-      .bg-color-btn.white-color.active {
-        border-color: var(--espresso);
-      }
 
-      /* 追加: カーソルアイコンのクラス */
       .pen-cursor {
         cursor:
           url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>')
@@ -531,12 +524,13 @@
       }
 
       .fill-cursor {
-        cursor:
-            10 10,
-          auto !important;
+        cursor: auto !important;
       }
 
-      /* ほぞんした えの せんたくぱれっと */
+      .battle-cursor {
+        cursor: auto !important;
+      }
+
       #library-container {
         background: rgba(255, 255, 255, 0.32);
         padding: 5px;
@@ -622,6 +616,7 @@
         z-index: 9999;
         pointer-events: none;
         transform-origin: center bottom;
+        transition: opacity 0.3s ease;
       }
 
       .snack-item {
@@ -647,7 +642,68 @@
         }
       }
 
-      /* スマホ対応レスポンシブ調整 */
+      /* バトルモード専用演出・HUD */
+      #battle-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 3;
+        display: none;
+      }
+
+      #battle-hud {
+        position: fixed;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3600;
+        display: none;
+        gap: 12px;
+        align-items: center;
+        background: rgba(255, 248, 243, 0.92);
+        padding: 10px 20px;
+        border-radius: 24px;
+        border: 2px solid var(--espresso);
+        box-shadow: 0 6px 20px rgba(74, 59, 50, 0.25);
+      }
+
+      #battle-status-text {
+        font-weight: bold;
+        color: var(--espresso);
+        font-size: 1rem;
+        letter-spacing: 0.05em;
+      }
+
+      /* ポップアップ擬音・リザルト演出エフェクト */
+      .battle-pop-effect {
+        position: absolute;
+        z-index: 9999;
+        font-weight: bold;
+        color: var(--terracotta);
+        -webkit-text-stroke: 1px var(--espresso);
+        font-size: 1.4rem;
+        pointer-events: none;
+        animation: floatUpPop 0.8s ease-out forwards;
+      }
+
+      @keyframes floatUpPop {
+        0% {
+          transform: translate(-50%, -50%) scale(0.5);
+          opacity: 1;
+        }
+        50% {
+          transform: translate(-50%, -120%) scale(1.2);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -180%) scale(1);
+          opacity: 0;
+        }
+      }
+
       @media (max-width: 768px) {
         #drawing-toolbar {
           top: auto;
@@ -678,7 +734,6 @@
           background: transparent !important;
           border: none !important;
           box-shadow: none !important;
-          z-index: 3200;
         }
         #drawing-toolbar.closed-mobile .toolbar-body,
         #drawing-toolbar.closed-mobile header {
@@ -708,25 +763,32 @@
           left: auto;
         }
 
-        .color-palette {
-          grid-template-columns: repeat(6, 1fr);
+        /* スマホ用バトルHUD・ギャラリー追加対応 */
+        #battle-hud {
+          width: 90%;
+          box-sizing: border-box;
+          flex-wrap: wrap;
+          padding: 8px 12px;
+          gap: 8px;
         }
-        .color-btn,
-        .bg-color-btn {
-          width: 24px;
-          height: 24px;
+        #battle-status-text {
+          font-size: 0.9rem;
+          width: 100%;
+          text-align: center;
         }
-        #library-container {
-          max-height: 90px;
+        #battle-hud button {
+          flex: 1;
+          font-size: 0.75rem;
+          padding: 8px 5px;
+          margin: 0;
         }
-        .library-item {
-          height: 42px;
+        .adult-gallery {
+          grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+          gap: 10px;
         }
-        #hamburger-btn {
-          top: 10px;
-          right: 10px;
-          width: 40px;
-          height: 40px;
+        .adult-card img {
+          width: 80px;
+          height: 80px;
         }
       }
     </style>
@@ -743,10 +805,33 @@
     <div id="menu-modal">
       <div class="menu-content">
         <h2>もーど せんたく</h2>
-        <button class="menu-btn" id="to-draw-mode">おえかき</button>
+        <button class="menu-btn" id="to-draw-mode">おえかきモード</button>
+        <button class="menu-btn" id="to-battle-mode">バトルモード</button>
         <button class="menu-btn" id="to-adult-mode">おとなようモード</button>
         <button class="menu-btn" id="close-menu-btn">とじる</button>
       </div>
+    </div>
+
+    <!-- バトルモード設定画面 -->
+    <div id="battle-setup-screen">
+      <div class="adult-header">
+        <h2>バトルモード キャラクターせんたく</h2>
+        <div class="adult-header-actions">
+          <button id="battle-start-action-btn">バトルスタート！</button>
+          <button id="close-battle-setup">もどる</button>
+        </div>
+      </div>
+      <p
+        style="
+          text-align: center;
+          margin-bottom: 15px;
+          color: var(--espresso);
+          font-weight: bold;
+        "
+      >
+        バトルに さんかさせたい キャラクターを えらんでね
+      </p>
+      <div id="battle-gallery" class="adult-gallery"></div>
     </div>
 
     <!-- おとなようモード / 一覧画面 -->
@@ -763,8 +848,20 @@
 
     <!-- キャンバス背景＆描画キャンバス -->
     <div id="canvas-bg"></div>
-    <!-- 初期状態はペンカーソルを設定 -->
     <canvas id="draw-canvas" class="pen-cursor"></canvas>
+    <canvas id="battle-canvas"></canvas>
+
+    <!-- バトル中HUD -->
+    <div id="battle-hud" class="interactive">
+      <span id="battle-status-text">バトルちゅう！おしだせ！</span>
+      <button id="retry-battle-btn" style="display: none">
+        もういちど バトルする
+      </button>
+      <button id="back-to-select-btn" style="display: none">
+        キャラクター せんたく
+      </button>
+      <button id="exit-battle-btn">バトルを おわる</button>
+    </div>
 
     <div id="ui-layer">
       <aside
@@ -772,7 +869,6 @@
         class="interactive"
         aria-label="おえかきツール"
       >
-        <!-- アコーディオン開閉用ボタン -->
         <button
           id="toggle-toolbar-btn"
           type="button"
@@ -784,7 +880,6 @@
           ◀
         </button>
 
-        <!-- アプリ名ヘッダー -->
         <header>
           <h1>うろちょろメーカー</h1>
           <p>かく、ほぞんする、うごかす</p>
@@ -941,7 +1036,6 @@
             <div class="btn-container">
               <button id="start-btn">みんな うごけ</button>
               <button id="stop-btn">とめる</button>
-              <!-- クラスに wide-btn を追加 -->
               <button id="screen-reset-btn" class="wide-btn">
                 がめんを リセット
               </button>
@@ -1081,21 +1175,17 @@
       const libraryContainer = document.getElementById("library-container");
       const colorBtns = document.querySelectorAll(".color-btn");
 
-      // 背景変更用の要素
       const bgColorBtns = document.querySelectorAll(".bg-color-btn");
       const selectBgPhotoBtn = document.getElementById("select-bg-photo-btn");
       const bgFileInput = document.getElementById("bg-file-input");
 
-      // ツールバー折りたたみ関連要素
       const drawingToolbar = document.getElementById("drawing-toolbar");
       const toggleToolbarBtn = document.getElementById("toggle-toolbar-btn");
       let isToolbarOpen = true;
 
       function updateToolbarToggleUI() {
         const isMobile = window.innerWidth <= 768;
-
         drawingToolbar.classList.remove("closed-pc", "closed-mobile");
-
         if (isToolbarOpen) {
           toggleToolbarBtn.textContent = isMobile ? "▼" : "◀";
           toggleToolbarBtn.setAttribute("aria-label", "おえかきツールをとじる");
@@ -1120,7 +1210,6 @@
       window.addEventListener("resize", updateToolbarToggleUI);
       updateToolbarToggleUI();
 
-      // ハンバーガーメニュー & ギャラリー関連要素
       const hamburgerBtn = document.getElementById("hamburger-btn");
       const menuModal = document.getElementById("menu-modal");
       const closeMenuBtn = document.getElementById("close-menu-btn");
@@ -1135,28 +1224,54 @@
         "adult-batch-download-container",
       );
 
+      // バトルモード関連要素
+      const toBattleModeBtn = document.getElementById("to-battle-mode");
+      const battleSetupScreen = document.getElementById("battle-setup-screen");
+      const closeBattleSetupBtn = document.getElementById("close-battle-setup");
+      const battleGallery = document.getElementById("battle-gallery");
+      const battleStartActionBtn = document.getElementById(
+        "battle-start-action-btn",
+      );
+      const battleCanvas = document.getElementById("battle-canvas");
+      const battleCtx = battleCanvas.getContext("2d");
+      const battleHud = document.getElementById("battle-hud");
+      const exitBattleBtn = document.getElementById("exit-battle-btn");
+      const retryBattleBtn = document.getElementById("retry-battle-btn");
+      const backToSelectBtn = document.getElementById("back-to-select-btn");
+      const battleStatusText = document.getElementById("battle-status-text");
+
       let creatures = [];
+      let battleCreatures = [];
+      let isBattleActive = false;
+      let battleField = { x: 0, y: 0, radius: 0 };
+      let lastSelectedImages = [];
+      let battleAnimationId = null;
+
       let currentColor = "#000000";
-      let drawMode = "pen"; // "pen", "eraser", "fill"
+      let drawMode = "pen";
       let isPaused = false;
 
-      // おやつ機能の状態管理（複数個置けるように配列へ変更）
       let snackModeActive = false;
       const snackModeBtn = document.getElementById("snack-mode-btn");
-      let activeSnacks = []; // [{ x, y, element }]
+      let activeSnacks = [];
 
       snackModeBtn.addEventListener("click", () => {
         snackModeActive = !snackModeActive;
         if (snackModeActive) {
-          snackModeBtn.textContent = "おやつをあげる（ON）";
+          snackModeBtn.textContent = "おやつをあげる";
           snackModeBtn.style.backgroundColor = "var(--terracotta)";
           snackModeBtn.style.color = "var(--espresso)";
+          canvas.className = "fill-cursor";
         } else {
-          snackModeBtn.textContent = "おやつをあげる（OFF）";
+          snackModeBtn.textContent = "おやつをあげる";
           snackModeBtn.style.backgroundColor = "var(--espresso)";
           snackModeBtn.style.color = "var(--cream)";
           activeSnacks.forEach((s) => s.element.remove());
           activeSnacks = [];
+
+          if (drawMode === "pen") canvas.className = "pen-cursor";
+          else if (drawMode === "eraser") canvas.className = "eraser-cursor";
+          else canvas.className = "fill-cursor";
         }
       });
 
@@ -1181,6 +1296,10 @@
       toDrawModeBtn.addEventListener("click", () => {
         menuModal.classList.remove("open");
         adultModeScreen.classList.remove("open");
+        battleSetupScreen.classList.remove("open");
+        if (isBattleActive) {
+          endBattleMode();
+        }
       });
 
       function openGalleryView() {
@@ -1202,6 +1321,424 @@
       closeAdultModeBtn.addEventListener("click", () => {
         adultModeScreen.classList.remove("open");
       });
+
+      toBattleModeBtn.addEventListener("click", () => {
+        menuModal.classList.remove("open");
+        renderBattleGallery();
+        battleSetupScreen.classList.add("open");
+      });
+
+      closeBattleSetupBtn.addEventListener("click", () => {
+        battleSetupScreen.classList.remove("open");
+      });
+
+      exitBattleBtn.addEventListener("click", () => {
+        endBattleMode();
+      });
+
+      retryBattleBtn.addEventListener("click", () => {
+        if (lastSelectedImages.length >= 2) {
+          startBattleMode(lastSelectedImages);
+        }
+      });
+
+      backToSelectBtn.addEventListener("click", () => {
+        endBattleMode();
+        renderBattleGallery();
+        battleSetupScreen.classList.add("open");
+      });
+
+      function renderBattleGallery() {
+        battleGallery.innerHTML = "";
+        const images = readSavedImages();
+        if (images.length === 0) {
+          battleGallery.innerHTML =
+            '<p style="grid-column: 1/-1; text-align: center; color: var(--espresso);">バトルに さんか できる キャラクターが いません。まず えを ほぞん してね！</p>';
+          return;
+        }
+
+        images.forEach((imgInfo, index) => {
+          const card = document.createElement("div");
+          card.className = "adult-card";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = false;
+          checkbox.addEventListener("change", (e) => {
+            e.stopPropagation();
+            if (checkbox.checked) {
+              card.classList.add("selected");
+            } else {
+              card.classList.remove("selected");
+            }
+          });
+          card.addEventListener("click", (e) => {
+            if (e.target !== checkbox) {
+              checkbox.checked = !checkbox.checked;
+              checkbox.dispatchEvent(new Event("change"));
+            }
+          });
+          card.appendChild(checkbox);
+
+          const img = document.createElement("img");
+          img.src = imgInfo.dataUrl;
+          card.appendChild(img);
+
+          const label = document.createElement("span");
+          label.style.fontSize = "0.75rem";
+          label.style.fontWeight = "bold";
+          label.style.color = "var(--espresso)";
+          label.textContent = `ファイター #${index + 1}`;
+          card.appendChild(label);
+
+          battleGallery.appendChild(card);
+        });
+      }
+
+      battleStartActionBtn.addEventListener("click", () => {
+        const cards = battleGallery.querySelectorAll(".adult-card");
+        const images = readSavedImages();
+        const selectedImages = [];
+
+        cards.forEach((card, idx) => {
+          const cb = card.querySelector("input[type='checkbox']");
+          if (cb && cb.checked && images[idx]) {
+            selectedImages.push(images[idx]);
+          }
+        });
+
+        if (selectedImages.length < 2) {
+          alert("バトルには 2たい いじょうの キャラクターを えらんでね！");
+          return;
+        }
+
+        lastSelectedImages = selectedImages;
+        battleSetupScreen.classList.remove("open");
+        startBattleMode(selectedImages);
+      });
+
+      function startBattleMode(selectedImages) {
+        screenResetBtn.click();
+        isBattleActive = true;
+
+        drawingToolbar.classList.add("battle-hidden");
+        canvas.className = "battle-cursor";
+
+        battleCanvas.style.display = "block";
+        battleHud.style.display = "flex";
+        battleStatusText.textContent = "バトルちゅう！おしだせ！";
+        retryBattleBtn.style.display = "none";
+        backToSelectBtn.style.display = "none";
+        exitBattleBtn.style.display = "inline-block";
+
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const radius = Math.min(cx, cy) * 0.72;
+        battleField = { x: cx, y: cy, radius: radius };
+
+        drawBattleField();
+
+        battleCreatures = selectedImages.map((imgInfo, idx) => {
+          const angle = (idx / selectedImages.length) * Math.PI * 2;
+
+          const pixelArea = imgInfo.width * imgInfo.height;
+          const scaleFactor = Math.min(
+            1.2,
+            Math.max(0.5, Math.sqrt(pixelArea) / 90),
+          );
+          const baseSize = 65 * scaleFactor;
+
+          let width, height;
+          if (imgInfo.width >= imgInfo.height) {
+            width = baseSize;
+            height = baseSize * (imgInfo.height / imgInfo.width);
+          } else {
+            height = baseSize;
+            width = baseSize * (imgInfo.width / imgInfo.height);
+          }
+
+          const spawnDist = radius * 0.75;
+          const px = cx + Math.cos(angle) * spawnDist - width / 2;
+          const py = cy + Math.sin(angle) * spawnDist - height / 2;
+
+          const creature = document.createElement("img");
+          creature.src = imgInfo.dataUrl;
+          creature.className = "wandering-creature";
+
+          creature.style.width = width + "px";
+          creature.style.height = height + "px";
+          creature.style.objectFit = "contain";
+          document.body.appendChild(creature);
+
+          // キャラクターごとの動きの個性（ランダムな重みや敏捷性）
+          const personalitySeed = Math.random();
+
+          return {
+            element: creature,
+            x: px,
+            y: py,
+            width: width,
+            height: height,
+            mass: scaleFactor * 2.5,
+            speedX: (Math.random() - 0.5) * 3.0,
+            speedY: (Math.random() - 0.5) * 3.0,
+            personality: personalitySeed, // 動きをキャラごとに変化させるためのパラメータ
+            isAlive: true,
+            victoryTimer: 0,
+          };
+        });
+
+        if (battleAnimationId) {
+          cancelAnimationFrame(battleAnimationId);
+          battleAnimationId = null;
+        }
+        battleAnimationId = requestAnimationFrame(updateBattle);
+      }
+
+      function drawBattleField() {
+        battleCanvas.width = window.innerWidth;
+        battleCanvas.height = window.innerHeight;
+        battleCtx.clearRect(0, 0, battleCanvas.width, battleCanvas.height);
+
+        battleCtx.save();
+        battleCtx.fillStyle = "rgba(74, 59, 50, 0.22)";
+        battleCtx.fillRect(0, 0, battleCanvas.width, battleCanvas.height);
+
+        battleCtx.globalCompositeOperation = "destination-out";
+        battleCtx.beginPath();
+        battleCtx.arc(
+          battleField.x,
+          battleField.y,
+          battleField.radius,
+          0,
+          Math.PI * 2,
+        );
+        battleCtx.fill();
+        battleCtx.restore();
+
+        battleCtx.save();
+        battleCtx.beginPath();
+        battleCtx.arc(
+          battleField.x,
+          battleField.y,
+          battleField.radius,
+          0,
+          Math.PI * 2,
+        );
+        battleCtx.strokeStyle = "var(--espresso)";
+        battleCtx.lineWidth = 8;
+        battleCtx.stroke();
+
+        battleCtx.beginPath();
+        battleCtx.arc(
+          battleField.x,
+          battleField.y,
+          battleField.radius - 6,
+          0,
+          Math.PI * 2,
+        );
+        battleCtx.strokeStyle = "var(--terracotta)";
+        battleCtx.lineWidth = 3;
+        battleCtx.stroke();
+        battleCtx.restore();
+      }
+
+      function showPopupEffect(text, x, y) {
+        const el = document.createElement("div");
+        el.className = "battle-pop-effect";
+        el.textContent = text;
+        el.style.left = x + "px";
+        el.style.top = x ? y + "px" : "0px";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 800);
+      }
+
+      function updateBattle() {
+        if (!isBattleActive) return;
+
+        drawBattleField();
+
+        const activeAliveList = battleCreatures.filter((c) => c.isAlive);
+
+        if (activeAliveList.length <= 1 && battleCreatures.length > 1) {
+          if (activeAliveList.length === 1) {
+            const winner = activeAliveList[0];
+
+            winner.speedX = 0;
+            winner.speedY = 0;
+
+            winner.victoryTimer += 0.08;
+            const pulse = 1 + Math.sin(winner.victoryTimer * 5) * 0.35;
+            const scaleXFactor = winner.speedX < 0 ? -1 : 1;
+            winner.element.style.transform = `translate(${winner.x}px, ${winner.y}px) scaleX(${scaleXFactor}) scale(${pulse})`;
+
+            battleStatusText.textContent = `かったね おめでとう！`;
+            retryBattleBtn.style.display = "inline-block";
+            backToSelectBtn.style.display = "inline-block";
+            exitBattleBtn.style.display = "none";
+
+            if (winner.victoryTimer < 0.1) {
+              showPopupEffect(
+                "はっけよいのこった！",
+                battleField.x,
+                battleField.y - 50,
+              );
+            }
+            battleAnimationId = requestAnimationFrame(updateBattle);
+            return;
+          } else {
+            isBattleActive = false;
+            battleStatusText.textContent = `おみごと！りょうしゃドロー！`;
+            retryBattleBtn.style.display = "inline-block";
+            backToSelectBtn.style.display = "inline-block";
+            exitBattleBtn.style.display = "none";
+            return;
+          }
+        }
+
+        battleCreatures.forEach((c) => {
+          if (!c.isAlive) return;
+
+          c.x += c.speedX;
+          c.y += c.speedY;
+
+          let target = null;
+          let minTargetDist = Infinity;
+          activeAliveList.forEach((other) => {
+            if (other === c) return;
+            const ox = other.x + other.width / 2;
+            const oy = other.y + other.height / 2;
+            const cx = c.x + c.width / 2;
+            const cy = c.y + c.height / 2;
+            const dist = Math.hypot(ox - cx, oy - cy);
+            if (dist < minTargetDist) {
+              minTargetDist = dist;
+              target = other;
+            }
+          });
+
+          if (target) {
+            const tx = target.x + target.width / 2;
+            const ty = target.y + target.height / 2;
+            const cx = c.x + c.width / 2;
+            const cy = c.y + c.height / 2;
+            const angleToTarget = Math.atan2(ty - cy, tx - cx);
+
+            // キャラクターごとに動きのランダム性（突撃の強さや不規則な蛇行）を加える
+            const rushForce = 0.25 + c.personality * 0.3;
+            const wobble =
+              Math.sin(Date.now() * 0.01 + c.personality * 10) * 0.8;
+
+            c.speedX += Math.cos(angleToTarget + wobble) * rushForce;
+            c.speedY += Math.sin(angleToTarget + wobble) * rushForce;
+          }
+
+          const currentSpd = Math.hypot(c.speedX, c.speedY);
+          const maxSpd = 11.5;
+          if (currentSpd > maxSpd) {
+            c.speedX = (c.speedX / currentSpd) * maxSpd;
+            c.speedY = (c.speedY / currentSpd) * maxSpd;
+          }
+
+          c.speedX *= 0.985;
+          c.speedY *= 0.985;
+
+          const centerX = c.x + c.width / 2;
+          const centerY = c.y + c.height / 2;
+          const distFromCenter = Math.hypot(
+            centerX - battleField.x,
+            centerY - battleField.y,
+          );
+
+          battleCreatures.forEach((other) => {
+            if (other === c || !other.isAlive) return;
+
+            const otherCenterX = other.x + other.width / 2;
+            const otherCenterY = other.y + other.height / 2;
+            const dx = otherCenterX - centerX;
+            const dy = otherCenterY - centerY;
+            const distance = Math.hypot(dx, dy);
+            const minDist = (c.width + other.width) / 2.3;
+
+            if (distance < minDist && distance > 0) {
+              const overlap = minDist - distance;
+              const angle = Math.atan2(dy, dx);
+
+              const totalMass = c.mass + other.mass;
+              const ratioC = other.mass / totalMass;
+              const ratioOther = c.mass / totalMass;
+
+              c.x -= Math.cos(angle) * overlap * ratioC;
+              c.y -= Math.sin(angle) * overlap * ratioC;
+              other.x += Math.cos(angle) * overlap * ratioOther;
+              other.y += Math.sin(angle) * overlap * ratioOther;
+
+              // 1対1になった際などの直線の往復膠着を防ぐため、ランダム性と強力なはじき飛ばし力を加える
+              const isTwoFighters = activeAliveList.length === 2;
+              const randomMultiplier = 0.4 + Math.random() * 4.2; // 爆発的なランダム係数
+              const pushPower = (isTwoFighters ? 16.0 : 9.0) * randomMultiplier;
+
+              // 中央付近であっても枠外まで勢いよく飛び出すバリエーションを持たせる
+              c.speedX = c.speedX * 0.02 - Math.cos(angle) * pushPower;
+              c.speedY = c.speedY * 0.02 - Math.sin(angle) * pushPower;
+              other.speedX = other.speedX * 0.02 + Math.cos(angle) * pushPower;
+              other.speedY = other.speedY * 0.02 + Math.sin(angle) * pushPower;
+
+              if (Math.random() < 0.2) {
+                const sounds = isTwoFighters
+                  ? [
+                      "きょうれつないちげき！",
+                      "ふきとんだ！",
+                      "いちもうだじん！",
+                      "ドッカーン！",
+                      "げきとつ！！",
+                    ]
+                  : ["どすこい！", "バキッ！", "それっ！", "うおおっ！"];
+                showPopupEffect(
+                  sounds[Math.floor(Math.random() * sounds.length)],
+                  centerX,
+                  centerY,
+                );
+              }
+            }
+          });
+
+          let scaleXFactor = c.speedX < 0 ? -1 : 1;
+          c.element.style.transform = `translate(${c.x}px, ${c.y}px) scaleX(${scaleXFactor})`;
+
+          if (distFromCenter > battleField.radius) {
+            c.isAlive = false;
+            c.element.remove();
+            showPopupEffect("リタイア！", centerX, centerY);
+          }
+        });
+
+        battleAnimationId = requestAnimationFrame(updateBattle);
+      }
+
+      function endBattleMode() {
+        isBattleActive = false;
+        if (battleAnimationId) {
+          cancelAnimationFrame(battleAnimationId);
+          battleAnimationId = null;
+        }
+        battleCanvas.style.display = "none";
+        battleHud.style.display = "none";
+
+        drawingToolbar.classList.remove("battle-hidden");
+        if (snackModeActive) {
+          canvas.className = "fill-cursor";
+        } else if (drawMode === "pen") {
+          canvas.className = "pen-cursor";
+        } else if (drawMode === "eraser") {
+          canvas.className = "eraser-cursor";
+        } else {
+          canvas.className = "fill-cursor";
+        }
+
+        battleCreatures.forEach((c) => c.element.remove());
+        battleCreatures = [];
+      }
 
       function renderAdultGallery(isSimpleList = false) {
         adultGallery.innerHTML = "";
@@ -1232,11 +1769,8 @@
             isAllSelected = !isAllSelected;
             checkboxes.forEach((cb, idx) => {
               cb.checked = isAllSelected;
-              if (isAllSelected) {
-                cards[idx].classList.add("selected");
-              } else {
-                cards[idx].classList.remove("selected");
-              }
+              if (isAllSelected) cards[idx].classList.add("selected");
+              else cards[idx].classList.remove("selected");
             });
             selectAllBtn.textContent = isAllSelected
               ? "すべて解除"
@@ -1244,7 +1778,7 @@
           });
 
           const batchPngBtn = document.createElement("button");
-          batchPngBtn.textContent = "選択した絵をPNGで保存";
+          batchPngBtn.textContent = "PNG一括保存";
           batchPngBtn.className = "download-btn";
           batchPngBtn.style.padding = "6px 12px";
           batchPngBtn.addEventListener("click", () => {
@@ -1262,7 +1796,7 @@
           });
 
           const batchJpgBtn = document.createElement("button");
-          batchJpgBtn.textContent = "選択した絵をJPGで保存";
+          batchJpgBtn.textContent = "JPG一括保存";
           batchJpgBtn.className = "download-btn jpg";
           batchJpgBtn.style.padding = "6px 12px";
           batchJpgBtn.addEventListener("click", () => {
@@ -1280,13 +1814,14 @@
                 const tCtx = tempCanvas.getContext("2d");
                 tCtx.fillStyle = "#ffffff";
                 tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
                 const sourceImg = new Image();
                 sourceImg.src = imgInfo.dataUrl;
                 sourceImg.onload = () => {
                   tCtx.drawImage(sourceImg, 0, 0);
-                  const jpgDataUrl = tempCanvas.toDataURL("image/jpeg", 0.9);
-                  downloadImage(jpgDataUrl, `illust_${idx + 1}.jpg`);
+                  downloadImage(
+                    tempCanvas.toDataURL("image/jpeg", 0.9),
+                    `illust_${idx + 1}.jpg`,
+                  );
                 };
               }
             });
@@ -1309,11 +1844,8 @@
             checkbox.type = "checkbox";
             checkbox.addEventListener("change", (e) => {
               e.stopPropagation();
-              if (checkbox.checked) {
-                card.classList.add("selected");
-              } else {
-                card.classList.remove("selected");
-              }
+              if (checkbox.checked) card.classList.add("selected");
+              else card.classList.remove("selected");
             });
             card.addEventListener("click", (e) => {
               if (e.target !== checkbox) {
@@ -1376,16 +1908,16 @@
               tempCanvas.width = imgInfo.width;
               tempCanvas.height = imgInfo.height;
               const tCtx = tempCanvas.getContext("2d");
-
               tCtx.fillStyle = "#ffffff";
               tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
               const sourceImg = new Image();
               sourceImg.src = imgInfo.dataUrl;
               sourceImg.onload = () => {
                 tCtx.drawImage(sourceImg, 0, 0);
-                const jpgDataUrl = tempCanvas.toDataURL("image/jpeg", 0.9);
-                downloadImage(jpgDataUrl, `illust_${index + 1}.jpg`);
+                downloadImage(
+                  tempCanvas.toDataURL("image/jpeg", 0.9),
+                  `illust_${index + 1}.jpg`,
+                );
               };
             });
 
@@ -1407,7 +1939,6 @@
         document.body.removeChild(link);
       }
 
-      /* ペン用カラーパレットの操作 */
       colorBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
           colorBtns.forEach((b) => b.classList.remove("active"));
@@ -1420,33 +1951,23 @@
         });
       });
 
-      /* 背景色用パレットの操作 */
       bgColorBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
           bgColorBtns.forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
-          const bgCol = btn.getAttribute("data-color");
           canvasBg.style.backgroundImage = "none";
-          canvasBg.style.backgroundColor = bgCol;
+          canvasBg.style.backgroundColor = btn.getAttribute("data-color");
         });
       });
 
-      /* 外部ファイル（写真）を背景にする操作 */
-      selectBgPhotoBtn.addEventListener("click", () => {
-        bgFileInput.click();
-      });
-
+      selectBgPhotoBtn.addEventListener("click", () => bgFileInput.click());
       bgFileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (event) => {
-          const imageUrl = event.target.result;
           canvasBg.style.backgroundColor = "transparent";
-          canvasBg.style.backgroundImage = `url('${imageUrl}')`;
-
-          // 背景色パレットの選択状態を解除
+          canvasBg.style.backgroundImage = `url('${event.target.result}')`;
           bgColorBtns.forEach((b) => b.classList.remove("active"));
         };
         reader.readAsDataURL(file);
@@ -1458,29 +1979,21 @@
         const tempCtx = tempCanvas.getContext("2d");
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
-        if (canvas.width > 0 && canvas.height > 0) {
+        if (canvas.width > 0 && canvas.height > 0)
           tempCtx.drawImage(canvas, 0, 0);
-        }
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
         ctx.drawImage(tempCanvas, 0, 0);
 
-        if (drawMode === "eraser") {
-          ctx.strokeStyle = "rgba(0,0,0,1)";
-          ctx.lineWidth = 20;
-        } else {
-          ctx.strokeStyle = currentColor;
-          ctx.fillStyle = currentColor;
-          ctx.lineWidth = 6;
-        }
+        ctx.strokeStyle =
+          drawMode === "eraser" ? "rgba(0,0,0,1)" : currentColor;
+        ctx.fillStyle = currentColor;
+        ctx.lineWidth = drawMode === "eraser" ? 20 : 6;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
-        if (undoStack.length === 0) {
-          saveState();
-        }
+        if (undoStack.length === 0) saveState();
       }
 
       window.addEventListener("resize", resizeCanvas);
@@ -1492,24 +2005,26 @@
 
       function getEventPos(e) {
         const touch = e.touches && e.touches.length > 0 ? e.touches[0] : null;
-        const clientX = Number.isFinite(e.clientX)
-          ? e.clientX
-          : touch
-            ? touch.clientX
-            : null;
-        const clientY = Number.isFinite(e.clientY)
-          ? e.clientY
-          : touch
-            ? touch.clientY
-            : null;
-        return { x: clientX, y: clientY };
+        return {
+          x: Number.isFinite(e.clientX)
+            ? e.clientX
+            : touch
+              ? touch.clientX
+              : null,
+          y: Number.isFinite(e.clientY)
+            ? e.clientY
+            : touch
+              ? touch.clientY
+              : null,
+        };
       }
 
       function handleCanvasDown(e) {
+        if (isBattleActive) return;
+
         const pos = getEventPos(e);
         if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
 
-        // おやつモードONのときは画面タップでおやつを複数個置けるようにする
         if (snackModeActive) {
           e.preventDefault();
           spawnSnack(pos.x, pos.y);
@@ -1517,7 +2032,6 @@
         }
 
         saveState();
-
         if (drawMode === "fill") {
           e.preventDefault();
           floodFill(Math.floor(pos.x), Math.floor(pos.y), currentColor);
@@ -1528,9 +2042,8 @@
       }
 
       function handleCanvasMove(e) {
-        if (!isDrawing || drawMode === "fill") return;
+        if (isBattleActive || !isDrawing || drawMode === "fill") return;
         e.preventDefault();
-
         const pos = getEventPos(e);
 
         ctx.save();
@@ -1540,7 +2053,6 @@
           ctx.globalCompositeOperation = "source-over";
           ctx.strokeStyle = currentColor;
         }
-
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
         ctx.lineTo(pos.x, pos.y);
@@ -1559,7 +2071,6 @@
         const data = imgData.data;
         const targetColor = getPixel(data, startX, startY, canvas.width);
         const fillColor = hexToRgba(fillColorHex);
-
         if (colorsMatch(targetColor, fillColor)) return;
 
         const queue = [[startX, startY]];
@@ -1568,39 +2079,29 @@
 
         while (queue.length > 0) {
           const [x, y] = queue.pop();
-
           if (x < 0 || x >= width || y < 0 || y >= height) continue;
-
-          const currentColorAtPixel = getPixel(data, x, y, width);
-          if (colorsMatch(currentColorAtPixel, targetColor)) {
+          if (colorsMatch(getPixel(data, x, y, width), targetColor)) {
             setPixel(data, x, y, width, fillColor);
-            queue.push([x + 1, y]);
-            queue.push([x - 1, y]);
-            queue.push([x, y + 1]);
-            queue.push([x, y - 1]);
+            queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
           }
         }
-
         ctx.putImageData(imgData, 0, 0);
       }
 
       function getPixel(data, x, y, width) {
-        const index = (y * width + x) * 4;
-        return [data[index], data[index + 1], data[index + 2], data[index + 3]];
+        const idx = (y * width + x) * 4;
+        return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
       }
-
       function setPixel(data, x, y, width, color) {
-        const index = (y * width + x) * 4;
-        data[index] = color[0];
-        data[index + 1] = color[1];
-        data[index + 2] = color[2];
-        data[index + 3] = color[3];
+        const idx = (y * width + x) * 4;
+        data[idx] = color[0];
+        data[idx + 1] = color[1];
+        data[idx + 2] = color[2];
+        data[idx + 3] = color[3];
       }
-
       function colorsMatch(a, b) {
         return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
       }
-
       function hexToRgba(hex) {
         let c = hex.replace("#", "");
         if (c.length === 3)
@@ -1627,8 +2128,7 @@
       undoBtn.addEventListener("click", () => {
         if (undoStack.length > 1) {
           undoStack.pop();
-          const previousState = undoStack[undoStack.length - 1];
-          ctx.putImageData(previousState, 0, 0);
+          ctx.putImageData(undoStack[undoStack.length - 1], 0, 0);
         } else if (undoStack.length === 1) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           saveState();
@@ -1640,17 +2140,14 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       });
 
-      // 描画モード切替時のカーソルクラス変更
       penBtn.addEventListener("click", () => {
         drawMode = "pen";
         penBtn.classList.add("is-active");
         eraserBtn.classList.remove("is-active");
         fillBtn.classList.remove("is-active");
-        canvas.classList.remove("fill-cursor", "eraser-cursor");
-        canvas.classList.add("pen-cursor");
+        if (!snackModeActive) canvas.className = "pen-cursor";
         ctx.lineWidth = 6;
         ctx.strokeStyle = currentColor;
-        ctx.fillStyle = currentColor;
       });
 
       eraserBtn.addEventListener("click", () => {
@@ -1658,8 +2155,7 @@
         eraserBtn.classList.add("is-active");
         penBtn.classList.remove("is-active");
         fillBtn.classList.remove("is-active");
-        canvas.classList.remove("fill-cursor", "pen-cursor");
-        canvas.classList.add("eraser-cursor");
+        if (!snackModeActive) canvas.className = "eraser-cursor";
         ctx.lineWidth = 20;
       });
 
@@ -1668,13 +2164,12 @@
         fillBtn.classList.add("is-active");
         penBtn.classList.remove("is-active");
         eraserBtn.classList.remove("is-active");
-        canvas.classList.remove("pen-cursor", "eraser-cursor");
-        canvas.classList.add("fill-cursor");
+        if (!snackModeActive) canvas.className = "fill-cursor";
       });
 
       function getCroppedImage() {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
         let minX = canvas.width,
           minY = canvas.height,
           maxX = 0,
@@ -1683,121 +2178,64 @@
 
         for (let y = 0; y < canvas.height; y++) {
           for (let x = 0; x < canvas.width; x++) {
-            const alpha = data[(y * canvas.width + x) * 4 + 3];
-            if (alpha > 0) {
+            if (data[(y * canvas.width + x) * 4 + 3] > 0) {
               if (x < minX) minX = x;
               if (x > maxX) maxX = x;
-              if (y < minY) minY = minY = y;
+              if (y < minY) minY = y;
               if (y > maxY) maxY = y;
               found = true;
             }
           }
         }
-
         if (!found) return null;
 
-        const padding = 10;
-        minX = Math.max(0, minX - padding);
-        minY = Math.max(0, minY - padding);
-        maxX = Math.min(canvas.width, maxX + padding);
-        maxY = Math.min(canvas.height, maxY + padding);
-
-        const width = maxX - minX;
-        const height = maxY - minY;
-
-        if (width < 2 || height < 2) return null;
+        const pad = 10;
+        minX = Math.max(0, minX - pad);
+        minY = Math.max(0, minY - pad);
+        maxX = Math.min(canvas.width, maxX + pad);
+        maxY = Math.min(canvas.height, maxY + pad);
+        const w = maxX - minX,
+          h = maxY - minY;
+        if (w < 2 || h < 2) return null;
 
         const cutCanvas = document.createElement("canvas");
-        cutCanvas.width = width;
-        cutCanvas.height = height;
-        const cutCtx = cutCanvas.getContext("2d");
-        cutCtx.drawImage(
-          canvas,
-          minX,
-          minY,
-          width,
-          height,
-          0,
-          0,
-          width,
-          height,
-        );
-
-        return {
-          dataUrl: cutCanvas.toDataURL(),
-          width: width,
-          height: height,
-        };
+        cutCanvas.width = w;
+        cutCanvas.height = h;
+        cutCanvas
+          .getContext("2d")
+          .drawImage(canvas, minX, minY, w, h, 0, 0, w, h);
+        return { dataUrl: cutCanvas.toDataURL(), width: w, height: h };
       }
 
       function readSavedImages() {
         const saved = localStorage.getItem("wandering_creatures");
         if (!saved) return [];
-
         try {
           const parsed = JSON.parse(saved);
           if (!Array.isArray(parsed)) return [];
-
-          return parsed
-            .filter((imgInfo) => {
-              if (!imgInfo || typeof imgInfo !== "object") return false;
-              if (
-                typeof imgInfo.dataUrl !== "string" ||
-                !imgInfo.dataUrl.startsWith("data:image/")
-              )
-                return false;
-              if (
-                !Number.isFinite(Number(imgInfo.width)) ||
-                !Number.isFinite(Number(imgInfo.height))
-              )
-                return false;
-              if (Number(imgInfo.width) <= 0 || Number(imgInfo.height) <= 0)
-                return false;
-              if (
-                Number(imgInfo.width) > 10000 ||
-                Number(imgInfo.height) > 10000
-              )
-                return false;
-              return true;
-            })
-            .map((imgInfo) => ({
-              dataUrl: imgInfo.dataUrl,
-              width: Number(imgInfo.width),
-              height: Number(imgInfo.height),
-            }));
-        } catch (error) {
-          console.warn("保存データを読み込めませんでした。", error);
+          return parsed.filter(
+            (i) =>
+              i &&
+              typeof i.dataUrl === "string" &&
+              i.dataUrl.startsWith("data:image/"),
+          );
+        } catch (e) {
           return [];
         }
-      }
-
-      function loadSavedImages() {
-        libraryContainer.innerHTML =
-          '<span class="library-placeholder">まだ えが ないよ</span>';
-        const images = readSavedImages();
-        images.forEach((imgInfo) => {
-          addThumbnailToLibrary(imgInfo);
-        });
       }
 
       function refreshAllLibraries() {
         libraryContainer.innerHTML =
           '<span class="library-placeholder">まだ えが ないよ</span>';
-        const images = readSavedImages();
-        images.forEach((imgInfo) => {
-          addThumbnailToLibrary(imgInfo);
-        });
+        readSavedImages().forEach((imgInfo) => addThumbnailToLibrary(imgInfo));
       }
 
       function saveImagesToStorageAll(images) {
         try {
           localStorage.setItem("wandering_creatures", JSON.stringify(images));
           return true;
-        } catch (error) {
-          console.error("保存領域への書き込みに失敗しました。", error);
-          alert(
-            "えの保存に失敗しました。保存できる量をこえている可能性があります。",
-          );
+        } catch (e) {
+          alert("えの保存容量をこえています。");
           return false;
         }
       }
@@ -1814,14 +2252,9 @@
         const thumb = document.createElement("img");
         thumb.src = imgInfo.dataUrl;
         thumb.className = "library-item";
-        thumb.title = "くりっくしてだす";
-
-        thumb.style.objectFit = "contain";
-        thumb.style.aspectRatio = `${imgInfo.width} / ${imgInfo.height}`;
-
-        thumb.addEventListener("click", () => {
-          spawnCreature(imgInfo.dataUrl, imgInfo.width, imgInfo.height);
-        });
+        thumb.addEventListener("click", () =>
+          spawnCreature(imgInfo.dataUrl, imgInfo.width, imgInfo.height),
+        );
 
         const actionBtns = document.createElement("div");
         actionBtns.className = "lib-action-btns";
@@ -1829,7 +2262,6 @@
         const editBtn = document.createElement("button");
         editBtn.className = "lib-btn lib-edit-btn";
         editBtn.textContent = "✏️";
-        editBtn.title = "えんぴつでなおす";
         editBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           const img = new Image();
@@ -1837,9 +2269,11 @@
           img.onload = () => {
             saveState();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const drawX = (canvas.width - img.width) / 2;
-            const drawY = (canvas.height - img.height) / 2;
-            ctx.drawImage(img, drawX, drawY);
+            ctx.drawImage(
+              img,
+              (canvas.width - img.width) / 2,
+              (canvas.height - img.height) / 2,
+            );
             saveState();
           };
         });
@@ -1847,11 +2281,9 @@
         const delBtn = document.createElement("button");
         delBtn.className = "lib-btn lib-del-btn";
         delBtn.textContent = "❌";
-        delBtn.title = "このえを消す";
         delBtn.addEventListener("click", (e) => {
           e.stopPropagation();
-          const ok = window.confirm("このえを さくじょ しますか？");
-          if (ok) {
+          if (window.confirm("このえを さくじょ しますか？")) {
             wrapper.remove();
             updateStorageAfterDelete();
             if (
@@ -1865,17 +2297,14 @@
 
         actionBtns.appendChild(editBtn);
         actionBtns.appendChild(delBtn);
-
         wrapper.appendChild(thumb);
         wrapper.appendChild(actionBtns);
         libraryContainer.appendChild(wrapper);
       }
 
       function updateStorageAfterDelete() {
-        const wrappers = libraryContainer.querySelectorAll(".library-wrapper");
         const newImages = [];
-        wrappers.forEach((w) => {
-          const img = w.querySelector(".library-item");
+        libraryContainer.querySelectorAll(".library-item").forEach((img) => {
           newImages.push({
             dataUrl: img.src,
             width: img.naturalWidth || 100,
@@ -1891,48 +2320,32 @@
           alert("ほぞんする え が ないよ！");
           return;
         }
-
         const images = readSavedImages();
         images.push(imgInfo);
         if (!saveImagesToStorageAll(images)) return;
-
         addThumbnailToLibrary(imgInfo);
         saveState();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       });
 
-      let activeCreatures = [];
-
-      // おやつを複数個置けるように拡張した関数
       function spawnSnack(x, y) {
         const snacks = ["🍎", "🍪", "🍩", "🍓", "🍉", "🍬"];
-        const randomSnack = snacks[Math.floor(Math.random() * snacks.length)];
-
         const el = document.createElement("div");
         el.className = "snack-item";
-        el.textContent = randomSnack;
+        el.textContent = snacks[Math.floor(Math.random() * snacks.length)];
         el.style.left = x + "px";
         el.style.top = y + "px";
         document.body.appendChild(el);
-
         activeSnacks.push({ x, y, element: el });
       }
 
-      function spawnCreature(
-        dataUrl,
-        origWidth,
-        origHeight,
-        customX,
-        customY,
-        customSpeedX,
-        customSpeedY,
-      ) {
+      function spawnCreature(dataUrl, origWidth, origHeight) {
         const creature = document.createElement("img");
         creature.src = dataUrl;
         creature.className = "wandering-creature";
 
         const baseSize = 90;
-        let scaleMultiplier = 1.0; // 育成要素による大きさ倍率
+        let scaleMultiplier = 1.0;
         let width, height;
 
         function updateSize() {
@@ -1947,46 +2360,33 @@
           creature.style.height = height + "px";
         }
         updateSize();
-
-        creature.style.objectFit = "contain";
         document.body.appendChild(creature);
 
-        let posX =
-          customX !== undefined
-            ? customX
-            : Math.random() * (window.innerWidth - width);
-        let posY =
-          customY !== undefined
-            ? customY
-            : Math.random() * (window.innerHeight - height);
-        let speedX =
-          customSpeedX !== undefined ? customSpeedX : (Math.random() - 0.5) * 6;
-        let speedY =
-          customSpeedY !== undefined ? customSpeedY : (Math.random() - 0.5) * 6;
-
-        if (customSpeedX === undefined) {
-          if (Math.abs(speedX) < 1) speedX = 2;
-          if (Math.abs(speedY) < 1) speedY = 2;
-        }
+        let posX = Math.random() * (window.innerWidth - width);
+        let posY = Math.random() * (window.innerHeight - height);
+        
+        // 修正: キャラクターのスピードを少し遅くする (係数を6から3に変更)
+        let speedX = (Math.random() - 0.5) * 3;
+        let speedY = (Math.random() - 0.5) * 3;
+        
+        // 修正: バグ修正含め、最低限のスピードを1前後に設定
+        if (Math.abs(speedX) < 1) speedX = speedX < 0 ? -1 : 1;
+        if (Math.abs(speedY) < 1) speedY = speedY < 0 ? -1 : 1;
 
         let stepCount = Math.random() * 100;
-
         const creatureObj = {
           element: creature,
-          dataUrl: dataUrl,
-          origWidth: origWidth,
-          origHeight: origHeight,
           get x() {
             return posX;
           },
-          set x(val) {
-            posX = val;
+          set x(v) {
+            posX = v;
           },
           get y() {
             return posY;
           },
-          set y(val) {
-            posY = val;
+          set y(v) {
+            posY = v;
           },
           get width() {
             return width;
@@ -1997,64 +2397,60 @@
           get speedX() {
             return speedX;
           },
-          set speedX(val) {
-            speedX = val;
+          set speedX(v) {
+            speedX = v;
           },
           get speedY() {
             return speedY;
           },
-          set speedY(val) {
-            speedY = val;
+          set speedY(v) {
+            speedY = v;
           },
           isRunning: !isPaused,
           animationId: null,
-          remove: function () {
+          remove() {
             this.isRunning = false;
             if (this.animationId) cancelAnimationFrame(this.animationId);
+            creatures = creatures.filter((c) => c !== this);
             creature.remove();
           },
         };
 
+        creatures.push(creatureObj);
+
         function animate() {
           if (!creatureObj.isRunning) return;
 
-          // 複数あるおやつの中から最も近いものを探して引き寄せられる処理
           if (activeSnacks.length > 0) {
-            let closestSnack = null;
-            let minDist = Infinity;
-
+            let closestSnack = null,
+              minDist = Infinity;
             for (let snack of activeSnacks) {
-              const targetX = snack.x - width / 2;
-              const targetY = snack.y - height / 2;
-              const dist = Math.hypot(targetX - posX, targetY - posY);
+              const dist = Math.hypot(
+                snack.x - width / 2 - posX,
+                snack.y - height / 2 - posY,
+              );
               if (dist < minDist) {
                 minDist = dist;
                 closestSnack = snack;
               }
             }
-
             if (closestSnack) {
-              const targetX = closestSnack.x - width / 2;
-              const targetY = closestSnack.y - height / 2;
-              const dx = targetX - posX;
-              const dy = targetY - posY;
+              const dx = closestSnack.x - width / 2 - posX;
+              const dy = closestSnack.y - height / 2 - posY;
               const dist = Math.hypot(dx, dy);
-
               if (dist < 15) {
-                // おやつを食べた！ちょっと大きくなって、食べたおやつを削除する
                 scaleMultiplier = Math.min(2.5, scaleMultiplier + 0.15);
                 updateSize();
                 closestSnack.element.remove();
                 activeSnacks = activeSnacks.filter((s) => s !== closestSnack);
               } else {
-                // おやつに向かって加速
-                const snackSpeed = 3.5;
                 speedX += (dx / dist) * 0.3;
                 speedY += (dy / dist) * 0.3;
-                const currentSpeed = Math.hypot(speedX, speedY);
-                if (currentSpeed > snackSpeed) {
-                  speedX = (speedX / currentSpeed) * snackSpeed;
-                  speedY = (speedY / currentSpeed) * snackSpeed;
+                const spd = Math.hypot(speedX, speedY);
+                // 修正: おやつへ向かうスピードの制限を少し遅くする (3.5から2.0)
+                if (spd > 2.0) {
+                  speedX = (speedX / spd) * 2.0;
+                  speedY = (speedY / spd) * 2.0;
                 }
               }
             }
@@ -2062,10 +2458,36 @@
 
           posX += speedX;
           posY += speedY;
-          stepCount += 0.2;
 
-          let tiltAngle = Math.sin(stepCount) * 15;
-          let scaleXFactor = speedX < 0 ? -1 : 1;
+          // キャラクター同士の衝突反発処理
+          creatures.forEach((other) => {
+            if (other === creatureObj) return;
+            const dx = other.x + other.width / 2 - (posX + width / 2);
+            const dy = other.y + other.height / 2 - (posY + height / 2);
+            const distance = Math.hypot(dx, dy);
+            const minDist = (width + other.width) / 2.3;
+
+            if (distance < minDist && distance > 0) {
+              const overlap = minDist - distance;
+              const angle = Math.atan2(dy, dx);
+
+              // 位置を押し戻す
+              posX -= Math.cos(angle) * overlap * 0.5;
+              posY -= Math.sin(angle) * overlap * 0.5;
+
+              // 速度を反発させる
+              const tempSpeedX = speedX;
+              const tempSpeedY = speedY;
+              speedX = other.speedX * 0.8 - Math.cos(angle) * 2;
+              speedY = other.speedY * 0.8 - Math.sin(angle) * 2;
+              other.speedX = tempSpeedX * 0.8 + Math.cos(angle) * 2;
+              other.speedY = tempSpeedY * 0.8 + Math.sin(angle) * 2;
+            }
+          });
+
+          stepCount += 0.2;
+          let tilt = Math.sin(stepCount) * 15;
+          let scaleX = speedX < 0 ? -1 : 1;
 
           if (posX <= 0 || posX + width >= window.innerWidth) {
             speedX *= -1;
@@ -2076,43 +2498,11 @@
             posY = Math.max(0, Math.min(posY, window.innerHeight - height));
           }
 
-          for (let other of activeCreatures) {
-            if (other === creatureObj || !other.isRunning) continue;
-
-            if (
-              posX < other.x + other.width &&
-              posX + width > other.x &&
-              posY < other.y + other.height &&
-              posY + height > other.y
-            ) {
-              const tempSpeedX = speedX;
-              const tempSpeedY = speedY;
-              speedX = other.speedX;
-              speedY = other.speedY;
-              other.speedX = tempSpeedX;
-              other.speedY = tempSpeedY;
-
-              const dx = posX + width / 2 - (other.x + other.width / 2);
-              const dy = posY + height / 2 - (other.y + other.height / 2);
-              const pushDist = 3;
-              posX += (dx !== 0 ? Math.sign(dx) : 1) * pushDist;
-              posY += (dy !== 0 ? Math.sign(dy) : 1) * pushDist;
-            }
-          }
-
-          creature.style.transform = `translate(${posX}px, ${posY}px) scaleX(${scaleXFactor}) rotate(${tiltAngle}deg)`;
+          creature.style.transform = `translate(${posX}px, ${posY}px) scaleX(${scaleX}) rotate(${tilt}deg)`;
           creatureObj.animationId = requestAnimationFrame(animate);
         }
 
-        if (creatureObj.isRunning) {
-          creatureObj.animationId = requestAnimationFrame(animate);
-        } else {
-          let scaleXFactor = speedX < 0 ? -1 : 1;
-          creature.style.transform = `translate(${posX}px, ${posY}px) scaleX(${scaleXFactor}) rotate(0deg)`;
-        }
-
-        activeCreatures.push(creatureObj);
-        creatures.push(creatureObj);
+        creatureObj.animationId = requestAnimationFrame(animate);
       }
 
       startBtn.addEventListener("click", () => {
@@ -2121,76 +2511,50 @@
           alert("まずは えを かいて ほぞんしてね！");
           return;
         }
-
         thumbs.forEach((thumb) => {
           const img = new Image();
           img.src = thumb.src;
-          img.onload = () => {
+          img.onload = () =>
             spawnCreature(
               thumb.src,
               img.naturalWidth || img.width,
               img.naturalHeight || img.height,
             );
-          };
         });
       });
 
       stopBtn.addEventListener("click", () => {
-        if (!isPaused) {
-          isPaused = true;
-          creatures.forEach((c) => {
-            c.isRunning = false;
-            if (c.animationId) cancelAnimationFrame(c.animationId);
-          });
-          stopBtn.textContent = "さいかいする";
-          stopBtn.style.backgroundColor = "var(--terracotta)";
-          stopBtn.style.color = "var(--espresso)";
-        } else {
-          isPaused = false;
-          creatures.forEach((c) => {
-            c.isRunning = true;
-            function resumeAnimate() {
-              if (!c.isRunning) return;
-
-              c.x += c.speedX;
-              c.y += c.speedY;
-
-              if (c.x <= 0 || c.x + c.width >= window.innerWidth) {
-                c.speedX *= -1;
-                c.x = c.x < 0 ? 0 : window.innerWidth - c.width;
-              }
-              if (c.y <= 0 || c.y + c.height >= window.innerHeight) {
-                c.speedY *= -1;
-                c.y = c.y < 0 ? c.y : window.innerHeight - c.height;
-              }
-
-              let scaleXFactor = c.speedX < 0 ? -1 : 1;
-              c.element.style.transform = `translate(${c.x}px, ${c.y}px) scaleX(${scaleXFactor}) rotate(0deg)`;
-              c.animationId = requestAnimationFrame(resumeAnimate);
+        isPaused = !isPaused;
+        creatures.forEach((c) => {
+          c.isRunning = !isPaused;
+          if (!isPaused) {
+            function resume() {
+              if (c.isRunning) c.animationId = requestAnimationFrame(resume);
             }
-            c.animationId = requestAnimationFrame(resumeAnimate);
-          });
-          stopBtn.textContent = "とめる";
-          stopBtn.style.backgroundColor = "var(--espresso)";
-          stopBtn.style.color = "var(--cream)";
-        }
+            c.animationId = requestAnimationFrame(resume);
+          } else if (c.animationId) cancelAnimationFrame(c.animationId);
+        });
+        stopBtn.textContent = isPaused ? "さいかいする" : "とめる";
+        stopBtn.style.backgroundColor = isPaused
+          ? "var(--terracotta)"
+          : "var(--espresso)";
+        stopBtn.style.color = isPaused ? "var(--espresso)" : "var(--cream)";
       });
 
       screenResetBtn.addEventListener("click", () => {
-        creatures.forEach((c) => c.remove());
+        // creatures配列のコピーに対してremove()を呼び出して安全に全消去
+        [...creatures].forEach((c) => c.remove());
         creatures = [];
-        activeCreatures = [];
         activeSnacks.forEach((s) => s.element.remove());
         activeSnacks = [];
-        if (isPaused) {
-          isPaused = false;
-          stopBtn.textContent = "とめる";
-          stopBtn.style.backgroundColor = "var(--espresso)";
-          stopBtn.style.color = "var(--cream)";
-        }
+        endBattleMode();
+        isPaused = false;
+        stopBtn.textContent = "とめる";
+        stopBtn.style.backgroundColor = "var(--espresso)";
+        stopBtn.style.color = "var(--cream)";
       });
 
-      loadSavedImages();
+      refreshAllLibraries();
     </script>
   </body>
 </html>
