@@ -480,11 +480,43 @@
         box-shadow: 0 2px 6px rgba(101, 89, 90, 0.12);
       }
 
+      /* 太さ調整スライダーのスタイル追加 */
+      .brush-size-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 6px 0 4px 0;
+        background: rgba(232, 183, 177, 0.12);
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(101, 89, 90, 0.14);
+      }
+      .brush-size-container label {
+        font-size: 0.7rem;
+        color: var(--espresso);
+        font-weight: bold;
+        white-space: nowrap;
+      }
+      .brush-size-container input[type="range"] {
+        flex-grow: 1;
+        accent-color: var(--espresso);
+        cursor: pointer;
+        height: 4px;
+      }
+      #brush-size-val {
+        font-size: 0.7rem;
+        color: var(--espresso);
+        font-weight: bold;
+        width: 24px;
+        text-align: right;
+      }
+
       .color-palette {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         gap: 4px;
         padding: 2px;
+        align-items: center;
       }
 
       .color-btn,
@@ -507,6 +539,65 @@
       .color-btn.white-color,
       .bg-color-btn.white-color {
         border-color: rgba(74, 59, 50, 0.48);
+      }
+
+      .color-picker-wrapper {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px dashed var(--espresso);
+        box-shadow: 0 1px 3px rgba(74, 59, 50, 0.22);
+        overflow: hidden;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        position: relative;
+        transition: transform 0.1s;
+      }
+      .color-picker-wrapper.active {
+        border-style: solid;
+        border-color: var(--espresso);
+        transform: scale(1.1);
+      }
+      .color-picker-wrapper::after {
+        content: "+";
+        position: absolute;
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--espresso);
+        pointer-events: none;
+      }
+      .custom-color-input {
+        width: 150%;
+        height: 150%;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        background: transparent;
+        transform: scale(1.5);
+        opacity: 0;
+      }
+
+      .add-color-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px dashed var(--espresso);
+        background: transparent;
+        color: var(--espresso);
+        font-size: 14px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        transition: transform 0.1s;
+      }
+      .add-color-btn:hover {
+        background: rgba(101, 89, 90, 0.1);
       }
 
       .pen-cursor {
@@ -642,7 +733,6 @@
         }
       }
 
-      /* バトルモード専用演出・HUD */
       #battle-canvas {
         position: absolute;
         top: 0;
@@ -677,7 +767,6 @@
         letter-spacing: 0.05em;
       }
 
-      /* ポップアップ擬音・リザルト演出エフェクト */
       .battle-pop-effect {
         position: absolute;
         z-index: 9999;
@@ -763,7 +852,6 @@
           left: auto;
         }
 
-        /* スマホ用バトルHUD・ギャラリー追加対応 */
         #battle-hud {
           width: 90%;
           box-sizing: border-box;
@@ -918,7 +1006,25 @@
                 ぬりつぶし
               </button>
             </div>
-            <div class="color-palette" aria-label="いろをえらぶ">
+
+            <!-- 太さ調整バー -->
+            <div class="brush-size-container">
+              <label for="brush-size-range">ふとさ</label>
+              <input
+                type="range"
+                id="brush-size-range"
+                min="1"
+                max="50"
+                value="8"
+              />
+              <span id="brush-size-val">8</span>
+            </div>
+
+            <div
+              class="color-palette"
+              id="color-palette"
+              aria-label="いろをえらぶ"
+            >
               <button
                 class="color-btn active"
                 data-color="#000000"
@@ -1003,6 +1109,29 @@
                 title="むらさき"
                 aria-label="むらさき"
               ></button>
+              <!-- さらに色を追加するボタン -->
+              <button
+                class="add-color-btn"
+                id="add-color-btn"
+                title="いろを ついか"
+                aria-label="いろを ついか"
+              >
+                ＋
+              </button>
+            </div>
+            <!-- 外部サイトへのリンク -->
+            <div style="margin-top: 6px; text-align: center">
+              <a
+                href="https://yamoch.github.io/munsellcore/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                  font-size: 0.7rem;
+                  color: var(--espresso);
+                  text-decoration: underline;
+                "
+                >いろをマンセルカラーチャート(HEX)からえらぶ</a
+              >
             </div>
             <div class="btn-container" style="margin-top: 4px">
               <button id="undo-btn">もどる</button>
@@ -1173,7 +1302,15 @@
       const eraserBtn = document.getElementById("eraser-btn");
       const fillBtn = document.getElementById("fill-btn");
       const libraryContainer = document.getElementById("library-container");
-      const colorBtns = document.querySelectorAll(".color-btn");
+
+      const brushSizeRange = document.getElementById("brush-size-range");
+      const brushSizeVal = document.getElementById("brush-size-val");
+      let brushSize = parseInt(brushSizeRange.value, 10);
+
+      brushSizeRange.addEventListener("input", (e) => {
+        brushSize = parseInt(e.target.value, 10);
+        brushSizeVal.textContent = brushSize;
+      });
 
       const bgColorBtns = document.querySelectorAll(".bg-color-btn");
       const selectBgPhotoBtn = document.getElementById("select-bg-photo-btn");
@@ -1470,7 +1607,6 @@
           creature.style.objectFit = "contain";
           document.body.appendChild(creature);
 
-          // キャラクターごとの動きの個性（ランダムな重みや敏捷性）
           const personalitySeed = Math.random();
 
           return {
@@ -1482,7 +1618,7 @@
             mass: scaleFactor * 2.5,
             speedX: (Math.random() - 0.5) * 3.0,
             speedY: (Math.random() - 0.5) * 3.0,
-            personality: personalitySeed, // 動きをキャラごとに変化させるためのパラメータ
+            personality: personalitySeed,
             isAlive: true,
             victoryTimer: 0,
           };
@@ -1624,7 +1760,6 @@
             const cy = c.y + c.height / 2;
             const angleToTarget = Math.atan2(ty - cy, tx - cx);
 
-            // キャラクターごとに動きのランダム性（突撃の強さや不規則な蛇行）を加える
             const rushForce = 0.25 + c.personality * 0.3;
             const wobble =
               Math.sin(Date.now() * 0.01 + c.personality * 10) * 0.8;
@@ -1673,12 +1808,10 @@
               other.x += Math.cos(angle) * overlap * ratioOther;
               other.y += Math.sin(angle) * overlap * ratioOther;
 
-              // 1対1になった際などの直線の往復膠着を防ぐため、ランダム性と強力なはじき飛ばし力を加える
               const isTwoFighters = activeAliveList.length === 2;
-              const randomMultiplier = 0.4 + Math.random() * 4.2; // 爆発的なランダム係数
+              const randomMultiplier = 0.4 + Math.random() * 4.2;
               const pushPower = (isTwoFighters ? 16.0 : 9.0) * randomMultiplier;
 
-              // 中央付近であっても枠外まで勢いよく飛び出すバリエーションを持たせる
               c.speedX = c.speedX * 0.02 - Math.cos(angle) * pushPower;
               c.speedY = c.speedY * 0.02 - Math.sin(angle) * pushPower;
               other.speedX = other.speedX * 0.02 + Math.cos(angle) * pushPower;
@@ -1939,16 +2072,96 @@
         document.body.removeChild(link);
       }
 
-      colorBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          colorBtns.forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          currentColor = btn.getAttribute("data-color");
-          if (drawMode === "pen") {
-            ctx.strokeStyle = currentColor;
-            ctx.fillStyle = currentColor;
-          }
+      function bindColorEvents() {
+        const colorBtns = document.querySelectorAll(".color-btn");
+        colorBtns.forEach((btn) => {
+          const newBtn = btn.cloneNode(true);
+          btn.parentNode.replaceChild(newBtn, btn);
+          newBtn.addEventListener("click", () => {
+            document
+              .querySelectorAll(".color-btn, .color-picker-wrapper")
+              .forEach((b) => b.classList.remove("active"));
+            newBtn.classList.add("active");
+            currentColor = newBtn.getAttribute("data-color");
+            if (drawMode === "pen") {
+              ctx.strokeStyle = currentColor;
+              ctx.fillStyle = currentColor;
+            }
+          });
         });
+
+        const wrappers = document.querySelectorAll(".color-picker-wrapper");
+        wrappers.forEach((wrapper) => {
+          const input = wrapper.querySelector(".custom-color-input");
+          const newWrapper = wrapper.cloneNode(true);
+          const newInput = newWrapper.querySelector(".custom-color-input");
+          wrapper.parentNode.replaceChild(newWrapper, wrapper);
+
+          newInput.addEventListener("input", (e) => {
+            currentColor = e.target.value;
+            document
+              .querySelectorAll(".color-btn, .color-picker-wrapper")
+              .forEach((b) => b.classList.remove("active"));
+            newWrapper.classList.add("active");
+            newWrapper.style.borderStyle = "solid";
+            newWrapper.style.background = currentColor;
+            if (drawMode === "pen") {
+              ctx.strokeStyle = currentColor;
+              ctx.fillStyle = currentColor;
+            }
+          });
+          newInput.addEventListener("click", () => {
+            document
+              .querySelectorAll(".color-btn, .color-picker-wrapper")
+              .forEach((b) => b.classList.remove("active"));
+            newWrapper.classList.add("active");
+          });
+        });
+      }
+
+      bindColorEvents();
+
+      const addColorBtn = document.getElementById("add-color-btn");
+      const colorPalette = document.getElementById("color-palette");
+      let customColorCount = 0;
+
+      addColorBtn.addEventListener("click", () => {
+        customColorCount++;
+        const randomColor =
+          "#" +
+          Math.floor(Math.random() * 16581375)
+            .toString(16)
+            .padStart(6, "0");
+
+        const newWrapper = document.createElement("div");
+        newWrapper.className = "color-picker-wrapper";
+        newWrapper.title = `そのたの いろ ${customColorCount}`;
+        newWrapper.setAttribute(
+          "aria-label",
+          `そのたの いろ ${customColorCount}`,
+        );
+
+        const newInput = document.createElement("input");
+        newInput.type = "color";
+        newInput.className = "custom-color-input";
+        newInput.value = randomColor;
+
+        newWrapper.appendChild(newInput);
+
+        colorPalette.insertBefore(newWrapper, addColorBtn);
+        bindColorEvents();
+
+        document
+          .querySelectorAll(".color-btn, .color-picker-wrapper")
+          .forEach((b) => b.classList.remove("active"));
+        newWrapper.classList.add("active");
+        newWrapper.style.borderStyle = "solid";
+        newWrapper.style.background = randomColor;
+        currentColor = randomColor;
+        if (drawMode === "pen") {
+          ctx.strokeStyle = currentColor;
+          ctx.fillStyle = currentColor;
+        }
       });
 
       bgColorBtns.forEach((btn) => {
@@ -1989,7 +2202,6 @@
         ctx.strokeStyle =
           drawMode === "eraser" ? "rgba(0,0,0,1)" : currentColor;
         ctx.fillStyle = currentColor;
-        ctx.lineWidth = drawMode === "eraser" ? 20 : 6;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
@@ -2002,27 +2214,36 @@
       let isDrawing = false;
       let lastX = 0;
       let lastY = 0;
+      let lastPressure = 0.5;
+      let lastTime = 0;
 
-      function getEventPos(e) {
+      function getEventPosAndPressure(e) {
         const touch = e.touches && e.touches.length > 0 ? e.touches[0] : null;
-        return {
-          x: Number.isFinite(e.clientX)
-            ? e.clientX
-            : touch
-              ? touch.clientX
-              : null,
-          y: Number.isFinite(e.clientY)
-            ? e.clientY
-            : touch
-              ? touch.clientY
-              : null,
-        };
+        const clientX = Number.isFinite(e.clientX)
+          ? e.clientX
+          : touch
+            ? touch.clientX
+            : null;
+        const clientY = Number.isFinite(e.clientY)
+          ? e.clientY
+          : touch
+            ? touch.clientY
+            : null;
+
+        let pressure = 0.5;
+        if (e.pressure !== undefined && e.pressure > 0) {
+          pressure = e.pressure;
+        } else if (touch && touch.force !== undefined && touch.force > 0) {
+          pressure = touch.force;
+        }
+
+        return { x: clientX, y: clientY, pressure };
       }
 
       function handleCanvasDown(e) {
         if (isBattleActive) return;
 
-        const pos = getEventPos(e);
+        const pos = getEventPosAndPressure(e);
         if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
 
         if (snackModeActive) {
@@ -2038,21 +2259,45 @@
         } else {
           isDrawing = true;
           [lastX, lastY] = [pos.x, pos.y];
+          lastPressure = pos.pressure || 0.5;
+          lastTime = performance.now();
         }
       }
 
       function handleCanvasMove(e) {
         if (isBattleActive || !isDrawing || drawMode === "fill") return;
         e.preventDefault();
-        const pos = getEventPos(e);
+        const pos = getEventPosAndPressure(e);
+        if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
+
+        const currentTime = performance.now();
+        const deltaTime = Math.max(1, currentTime - lastTime);
+        const distance = Math.hypot(pos.x - lastX, pos.y - lastY);
+        const speed = distance / deltaTime;
+
+        let currentPressure = pos.pressure;
+        if (
+          currentPressure === 0.5 &&
+          !e.pointerType &&
+          e.type.startsWith("mouse")
+        ) {
+          currentPressure = Math.max(0.15, Math.min(1.0, 1.2 - speed * 0.3));
+        }
+
+        const smoothedPressure = lastPressure * 0.4 + currentPressure * 0.6;
 
         ctx.save();
         if (drawMode === "eraser") {
           ctx.globalCompositeOperation = "destination-out";
+          // スライダーの値（brushSize）を基準にした消しゴムの太さ
+          ctx.lineWidth = Math.max(2, brushSize * (smoothedPressure * 1.2));
         } else {
           ctx.globalCompositeOperation = "source-over";
           ctx.strokeStyle = currentColor;
+          // スライダーの値（brushSize）を基準にしたペンの太さ
+          ctx.lineWidth = Math.max(1, brushSize * (smoothedPressure * 1.2));
         }
+
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
         ctx.lineTo(pos.x, pos.y);
@@ -2060,6 +2305,8 @@
         ctx.restore();
 
         [lastX, lastY] = [pos.x, pos.y];
+        lastPressure = smoothedPressure;
+        lastTime = currentTime;
       }
 
       function stopDrawing() {
@@ -2113,17 +2360,11 @@
         return [(num >> 16) & 255, (num >> 8) & 255, num & 255, 255];
       }
 
-      canvas.addEventListener("mousedown", handleCanvasDown);
-      canvas.addEventListener("mousemove", handleCanvasMove);
-      canvas.addEventListener("mouseup", stopDrawing);
-      canvas.addEventListener("mouseout", stopDrawing);
-      canvas.addEventListener("touchstart", handleCanvasDown, {
-        passive: false,
-      });
-      canvas.addEventListener("touchmove", handleCanvasMove, {
-        passive: false,
-      });
-      canvas.addEventListener("touchend", stopDrawing);
+      canvas.addEventListener("pointerdown", handleCanvasDown);
+      canvas.addEventListener("pointermove", handleCanvasMove);
+      canvas.addEventListener("pointerup", stopDrawing);
+      canvas.addEventListener("pointercancel", stopDrawing);
+      canvas.addEventListener("pointerout", stopDrawing);
 
       undoBtn.addEventListener("click", () => {
         if (undoStack.length > 1) {
@@ -2146,7 +2387,6 @@
         eraserBtn.classList.remove("is-active");
         fillBtn.classList.remove("is-active");
         if (!snackModeActive) canvas.className = "pen-cursor";
-        ctx.lineWidth = 6;
         ctx.strokeStyle = currentColor;
       });
 
@@ -2156,7 +2396,6 @@
         penBtn.classList.remove("is-active");
         fillBtn.classList.remove("is-active");
         if (!snackModeActive) canvas.className = "eraser-cursor";
-        ctx.lineWidth = 20;
       });
 
       fillBtn.addEventListener("click", () => {
@@ -2364,12 +2603,10 @@
 
         let posX = Math.random() * (window.innerWidth - width);
         let posY = Math.random() * (window.innerHeight - height);
-        
-        // 修正: キャラクターのスピードを少し遅くする (係数を6から3に変更)
+
         let speedX = (Math.random() - 0.5) * 3;
         let speedY = (Math.random() - 0.5) * 3;
-        
-        // 修正: バグ修正含め、最低限のスピードを1前後に設定
+
         if (Math.abs(speedX) < 1) speedX = speedX < 0 ? -1 : 1;
         if (Math.abs(speedY) < 1) speedY = speedY < 0 ? -1 : 1;
 
@@ -2447,7 +2684,6 @@
                 speedX += (dx / dist) * 0.3;
                 speedY += (dy / dist) * 0.3;
                 const spd = Math.hypot(speedX, speedY);
-                // 修正: おやつへ向かうスピードの制限を少し遅くする (3.5から2.0)
                 if (spd > 2.0) {
                   speedX = (speedX / spd) * 2.0;
                   speedY = (speedY / spd) * 2.0;
@@ -2459,7 +2695,6 @@
           posX += speedX;
           posY += speedY;
 
-          // キャラクター同士の衝突反発処理
           creatures.forEach((other) => {
             if (other === creatureObj) return;
             const dx = other.x + other.width / 2 - (posX + width / 2);
@@ -2471,11 +2706,9 @@
               const overlap = minDist - distance;
               const angle = Math.atan2(dy, dx);
 
-              // 位置を押し戻す
               posX -= Math.cos(angle) * overlap * 0.5;
               posY -= Math.sin(angle) * overlap * 0.5;
 
-              // 速度を反発させる
               const tempSpeedX = speedX;
               const tempSpeedY = speedY;
               speedX = other.speedX * 0.8 - Math.cos(angle) * 2;
@@ -2542,7 +2775,6 @@
       });
 
       screenResetBtn.addEventListener("click", () => {
-        // creatures配列のコピーに対してremove()を呼び出して安全に全消去
         [...creatures].forEach((c) => c.remove());
         creatures = [];
         activeSnacks.forEach((s) => s.element.remove());
