@@ -961,7 +961,7 @@
         "
       >
         バトルに さんかさせたい キャラクターを えらんでね（さいしょに
-        えらんだキャラを うごかしてね）
+        えらんだキャラクターを うごかせるよ）
       </p>
       <div id="battle-gallery" class="adult-gallery"></div>
     </div>
@@ -987,8 +987,17 @@
     <!-- バトル中HUD -->
     <div id="battle-hud" class="interactive">
       <span id="battle-status-text">バトルちゅう！おしだそう！</span>
+      <span id="battle-guide-text" style="display: none"
+        >矢印キー または 画面ドラッグ でキャラをうごかしてね！</span
+      >
       <div
-        style="display: flex; gap: 8px; width: 100%; justify-content: center"
+        style="
+          display: flex;
+          gap: 8px;
+          width: 100%;
+          justify-content: center;
+          margin-top: 6px;
+        "
       >
         <button id="retry-battle-btn" style="display: none">
           もういちど バトルする
@@ -1539,7 +1548,6 @@
         images.forEach((imgInfo, index) => {
           const card = document.createElement("div");
           card.className = "adult-card";
-          // 選択順序を保持するためのタイムスタンプ用カスタム属性
           card.dataset.index = index;
 
           const checkbox = document.createElement("input");
@@ -1549,7 +1557,7 @@
             e.stopPropagation();
             if (checkbox.checked) {
               card.classList.add("selected");
-              card.dataset.selectTime = Date.now(); // 選択された瞬間の時刻を記録
+              card.dataset.selectTime = Date.now();
             } else {
               card.classList.remove("selected");
               delete card.dataset.selectTime;
@@ -1582,7 +1590,6 @@
         const cards = Array.from(battleGallery.querySelectorAll(".adult-card"));
         const images = readSavedImages();
 
-        // チェックされているカードを抽出し、選択された順番（selectTime順）に並び替える
         const selectedCards = cards
           .filter((card) => {
             const cb = card.querySelector("input[type='checkbox']");
@@ -1624,8 +1631,17 @@
         drawingToolbar.classList.add("battle-hidden");
         canvas.className = "battle-cursor";
 
+        // ここでバトル用キャンバスとHUDを確実に表示しサイズを設定する
         battleCanvas.style.display = "block";
         battleHud.style.display = "flex";
+
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const radius = Math.min(cx, cy) * 0.72;
+        battleField = { x: cx, y: cy, radius: radius };
+
+        // バトルフィールドの背景描画を確実に実行
+        drawBattleField();
 
         if (battleModeType === "manual") {
           battleStatusText.textContent = "きみを 操作して 勝ち残れ！";
@@ -1638,13 +1654,6 @@
         retryBattleBtn.style.display = "none";
         backToSelectBtn.style.display = "none";
         exitBattleBtn.style.display = "inline-block";
-
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-        const radius = Math.min(cx, cy) * 0.72;
-        battleField = { x: cx, y: cy, radius: radius };
-
-        drawBattleField();
 
         battleCreatures = selectedImages.map((imgInfo, idx) => {
           const angle = (idx / selectedImages.length) * Math.PI * 2;
@@ -1679,7 +1688,6 @@
           document.body.appendChild(creature);
 
           const personalitySeed = Math.random();
-          // 最初に選択されたキャラクター（index === 0）をプレイヤーにする
           const isPlayer = battleModeType === "manual" && idx === 0;
 
           if (isPlayer) {
@@ -2890,7 +2898,7 @@
               if (dist < 15) {
                 scaleMultiplier = Math.min(2.5, scaleMultiplier + 0.15);
                 updateSize();
-                closestSrcSnack = closestSnack.element.remove();
+                closestSnack.element.remove();
                 activeSnacks = activeSnacks.filter((s) => s !== closestSnack);
               } else {
                 speedX += (dx / dist) * 0.25;
