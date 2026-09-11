@@ -480,7 +480,6 @@
         box-shadow: 0 2px 6px rgba(101, 89, 90, 0.12);
       }
 
-      /* 太さ調整スライダーのスタイル追加 */
       .brush-size-container {
         display: flex;
         align-items: center;
@@ -751,9 +750,10 @@
         transform: translateX(-50%);
         z-index: 3600;
         display: none;
-        gap: 12px;
+        flex-direction: column;
+        gap: 6px;
         align-items: center;
-        background: rgba(255, 248, 243, 0.92);
+        background: rgba(255, 248, 243, 0.95);
         padding: 10px 20px;
         border-radius: 24px;
         border: 2px solid var(--espresso);
@@ -765,6 +765,36 @@
         color: var(--espresso);
         font-size: 1rem;
         letter-spacing: 0.05em;
+        text-align: center;
+      }
+
+      #battle-guide-text {
+        font-size: 0.75rem;
+        color: var(--terracotta);
+        -webkit-text-stroke: 0.5px var(--espresso);
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* モード選択ラジオ用スタイル */
+      .mode-select-box {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 15px;
+        background: rgba(232, 183, 177, 0.2);
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(74, 59, 50, 0.2);
+      }
+      .mode-select-box label {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: var(--espresso);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
       }
 
       .battle-pop-effect {
@@ -857,10 +887,10 @@
           box-sizing: border-box;
           flex-wrap: wrap;
           padding: 8px 12px;
-          gap: 8px;
+          gap: 6px;
         }
         #battle-status-text {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           width: 100%;
           text-align: center;
         }
@@ -909,6 +939,19 @@
           <button id="close-battle-setup">もどる</button>
         </div>
       </div>
+
+      <!-- モード選択UI -->
+      <div class="mode-select-box">
+        <label>
+          <input type="radio" name="battle-mode-type" value="auto" checked />
+          じどうでみる
+        </label>
+        <label>
+          <input type="radio" name="battle-mode-type" value="manual" />
+          じぶんでたたかう
+        </label>
+      </div>
+
       <p
         style="
           text-align: center;
@@ -917,7 +960,8 @@
           font-weight: bold;
         "
       >
-        バトルに さんかさせたい キャラクターを えらんでね
+        バトルに さんかさせたい キャラクターを えらんでね（さいしょに
+        えらんだキャラを うごかしてね）
       </p>
       <div id="battle-gallery" class="adult-gallery"></div>
     </div>
@@ -936,357 +980,348 @@
 
     <!-- キャンバス背景＆描画キャンバス -->
     <div id="canvas-bg"></div>
+    <div id="ui-layer"></div>
     <canvas id="draw-canvas" class="pen-cursor"></canvas>
     <canvas id="battle-canvas"></canvas>
 
     <!-- バトル中HUD -->
     <div id="battle-hud" class="interactive">
-      <span id="battle-status-text">バトルちゅう！おしだせ！</span>
-      <button id="retry-battle-btn" style="display: none">
-        もういちど バトルする
-      </button>
-      <button id="back-to-select-btn" style="display: none">
-        キャラクター せんたく
-      </button>
-      <button id="exit-battle-btn">バトルを おわる</button>
-    </div>
-
-    <div id="ui-layer">
-      <aside
-        id="drawing-toolbar"
-        class="interactive"
-        aria-label="おえかきツール"
+      <span id="battle-status-text">バトルちゅう！おしだそう！</span>
+      <div
+        style="display: flex; gap: 8px; width: 100%; justify-content: center"
       >
-        <button
-          id="toggle-toolbar-btn"
-          type="button"
-          aria-expanded="true"
-          aria-controls="toolbar-body"
-          aria-label="おえかきツールをとじる"
-          title="おえかきツールをとじる"
-        >
-          ◀
+        <button id="retry-battle-btn" style="display: none">
+          もういちど バトルする
         </button>
-
-        <header>
-          <h1>うろちょろメーカー</h1>
-          <p>かく、ほぞんする、うごかす</p>
-        </header>
-
-        <div class="toolbar-body" id="toolbar-body">
-          <section class="tool-section" aria-labelledby="draw-tools-title">
-            <span id="draw-tools-title" class="tool-section-title">かく</span>
-            <div
-              class="draw-mode-switch"
-              role="group"
-              aria-label="えがきかたをえらぶ"
-            >
-              <button
-                id="pen-btn"
-                class="draw-mode-btn is-active"
-                type="button"
-                aria-pressed="true"
-              >
-                ペン
-              </button>
-              <button
-                id="eraser-btn"
-                class="draw-mode-btn"
-                type="button"
-                aria-pressed="false"
-              >
-                けしゴム
-              </button>
-              <button
-                id="fill-btn"
-                class="draw-mode-btn"
-                type="button"
-                aria-pressed="false"
-              >
-                ぬりつぶし
-              </button>
-            </div>
-
-            <!-- 太さ調整バー -->
-            <div class="brush-size-container">
-              <label for="brush-size-range">ふとさ</label>
-              <input
-                type="range"
-                id="brush-size-range"
-                min="1"
-                max="50"
-                value="8"
-              />
-              <span id="brush-size-val">8</span>
-            </div>
-
-            <div
-              class="color-palette"
-              id="color-palette"
-              aria-label="いろをえらぶ"
-            >
-              <button
-                class="color-btn active"
-                data-color="#000000"
-                style="background-color: #000000"
-                title="くろ"
-                aria-label="くろ"
-              ></button>
-              <button
-                class="color-btn white-color"
-                data-color="#ffffff"
-                style="background-color: #ffffff"
-                title="しろ"
-                aria-label="しろ"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#9e9e9e"
-                style="background-color: #9e9e9e"
-                title="はいいろ"
-                aria-label="はいいろ"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#930028"
-                style="background-color: #930028"
-                title="あか"
-                aria-label="あか"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#E0859D"
-                style="background-color: #e0859d"
-                title="ぴんく"
-                aria-label="ぴんく"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#54443C"
-                style="background-color: #54443c"
-                title="ちゃいろ"
-                aria-label="ちゃいろ"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#FF9203"
-                style="background-color: #ff9203"
-                title="おれんじ"
-                aria-label="おれんじ"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#ECC600"
-                style="background-color: #ecc600"
-                title="きいろ"
-                aria-label="きいろ"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#008152"
-                style="background-color: #008152"
-                title="みどり"
-                aria-label="みどり"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#87B0E5"
-                style="background-color: #87b0e5"
-                title="みずいろ"
-                aria-label="みずいろ"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#00488B"
-                style="background-color: #00488b"
-                title="あお"
-                aria-label="あお"
-              ></button>
-              <button
-                class="color-btn"
-                data-color="#7C4C92"
-                style="background-color: #7c4c92"
-                title="むらさき"
-                aria-label="むらさき"
-              ></button>
-              <!-- さらに色を追加するボタン -->
-              <button
-                class="add-color-btn"
-                id="add-color-btn"
-                title="いろを ついか"
-                aria-label="いろを ついか"
-              >
-                ＋
-              </button>
-            </div>
-            <!-- 外部サイトへのリンク -->
-            <div style="margin-top: 6px; text-align: center">
-              <a
-                href="https://yamoch.github.io/munsellcore/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style="
-                  font-size: 0.7rem;
-                  color: var(--espresso);
-                  text-decoration: underline;
-                "
-                >いろをマンセルカラーチャート(HEX)からえらぶ</a
-              >
-            </div>
-            <div class="btn-container" style="margin-top: 4px">
-              <button id="undo-btn">もどる</button>
-              <button id="clear-btn">いまのえを けす</button>
-            </div>
-          </section>
-
-          <section class="tool-section" aria-labelledby="save-tools-title">
-            <span id="save-tools-title" class="tool-section-title"
-              >ほぞんする</span
-            >
-            <div class="btn-container">
-              <button id="save-btn">えを ほぞん</button>
-              <button id="open-gallery-btn">いちらんを みる</button>
-            </div>
-          </section>
-
-          <section class="tool-section" aria-labelledby="library-title">
-            <span id="library-title" class="tool-section-title"
-              >ほぞんした え</span
-            >
-            <div id="library-container">
-              <span class="library-placeholder">まだ えが ないよ</span>
-            </div>
-          </section>
-
-          <section class="tool-section" aria-labelledby="play-tools-title">
-            <span id="play-tools-title" class="tool-section-title"
-              >うごかす</span
-            >
-            <div class="btn-container">
-              <button id="start-btn">みんな うごけ</button>
-              <button id="stop-btn">とめる</button>
-              <button id="screen-reset-btn" class="wide-btn">
-                がめんを リセット
-              </button>
-            </div>
-          </section>
-
-          <section class="tool-section" aria-labelledby="snack-tools-title">
-            <span id="snack-tools-title" class="tool-section-title"
-              >おやつ</span
-            >
-            <div class="btn-container">
-              <button id="snack-mode-btn" class="wide-btn">
-                おやつをあげる
-              </button>
-            </div>
-          </section>
-
-          <section class="tool-section" aria-labelledby="bg-tools-title">
-            <span id="bg-tools-title" class="tool-section-title"
-              >はいけいを かえる</span
-            >
-            <div class="color-palette" aria-label="はいけいのいろをえらぶ">
-              <button
-                class="bg-color-btn white-color active"
-                data-color="#ffffff"
-                style="background-color: #ffffff"
-                title="しろ"
-                aria-label="しろ"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#000000"
-                style="background-color: #000000"
-                title="くろ"
-                aria-label="くろ"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#9e9e9e"
-                style="background-color: #9e9e9e"
-                title="はいいろ"
-                aria-label="はいいろ"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#930028"
-                style="background-color: #930028"
-                title="あか"
-                aria-label="あか"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#E0859D"
-                style="background-color: #e0859d"
-                title="ぴんく"
-                aria-label="ぴんく"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#54443C"
-                style="background-color: #54443c"
-                title="ちゃいろ"
-                aria-label="ちゃいろ"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#FF9203"
-                style="background-color: #ff9203"
-                title="おれんじ"
-                aria-label="おれんじ"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#ECC600"
-                style="background-color: #ecc600"
-                title="きいろ"
-                aria-label="きいろ"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#008152"
-                style="background-color: #008152"
-                title="みどり"
-                aria-label="みどり"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#87B0E5"
-                style="background-color: #87b0e5"
-                title="みずいろ"
-                aria-label="みずいろ"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#00488B"
-                style="background-color: #00488b"
-                title="あお"
-                aria-label="あお"
-              ></button>
-              <button
-                class="bg-color-btn"
-                data-color="#7C4C92"
-                style="background-color: #7c4c92"
-                title="むらさき"
-                aria-label="むらさき"
-              ></button>
-            </div>
-            <div class="btn-container" style="margin-top: 6px">
-              <button id="select-bg-photo-btn" class="wide-btn">
-                しゃしんを えらぶ
-              </button>
-              <input
-                type="file"
-                id="bg-file-input"
-                accept="image/*"
-                style="display: none"
-              />
-            </div>
-          </section>
-        </div>
-      </aside>
+        <button id="back-to-select-btn" style="display: none">
+          キャラクター せんたく
+        </button>
+        <button id="exit-battle-btn">バトルを おわる</button>
+      </div>
     </div>
+
+    <aside id="drawing-toolbar" class="interactive" aria-label="おえかきツール">
+      <button
+        id="toggle-toolbar-btn"
+        type="button"
+        aria-expanded="true"
+        aria-controls="toolbar-body"
+        aria-label="おえかきツールをとじる"
+        title="おえかきツールをとじる"
+      >
+        ◀
+      </button>
+
+      <header>
+        <h1>うろちょろメーカー</h1>
+        <p>かく、ほぞんする、うごかす</p>
+      </header>
+
+      <div class="toolbar-body" id="toolbar-body">
+        <section class="tool-section" aria-labelledby="draw-tools-title">
+          <span id="draw-tools-title" class="tool-section-title">かく</span>
+          <div
+            class="draw-mode-switch"
+            role="group"
+            aria-label="えがきかたをえらぶ"
+          >
+            <button
+              id="pen-btn"
+              class="draw-mode-btn is-active"
+              type="button"
+              aria-pressed="true"
+            >
+              ペン
+            </button>
+            <button
+              id="eraser-btn"
+              class="draw-mode-btn"
+              type="button"
+              aria-pressed="false"
+            >
+              けしゴム
+            </button>
+            <button
+              id="fill-btn"
+              class="draw-mode-btn"
+              type="button"
+              aria-pressed="false"
+            >
+              ぬりつぶし
+            </button>
+          </div>
+
+          <!-- 太さ調整バー -->
+          <div class="brush-size-container">
+            <label for="brush-size-range">ふとさ</label>
+            <input
+              type="range"
+              id="brush-size-range"
+              min="1"
+              max="50"
+              value="8"
+            />
+            <span id="brush-size-val">8</span>
+          </div>
+
+          <div
+            class="color-palette"
+            id="color-palette"
+            aria-label="いろをえらぶ"
+          >
+            <button
+              class="color-btn active"
+              data-color="#000000"
+              style="background-color: #000000"
+              title="くろ"
+              aria-label="くろ"
+            ></button>
+            <button
+              class="color-btn white-color"
+              data-color="#ffffff"
+              style="background-color: #ffffff"
+              title="しろ"
+              aria-label="しろ"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#9e9e9e"
+              style="background-color: #9e9e9e"
+              title="はいいろ"
+              aria-label="はいいろ"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#930028"
+              style="background-color: #930028"
+              title="あか"
+              aria-label="あか"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#E0859D"
+              style="background-color: #e0859d"
+              title="ぴんく"
+              aria-label="ぴんく"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#54443C"
+              style="background-color: #54443c"
+              title="ちゃいろ"
+              aria-label="ちゃいろ"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#FF9203"
+              style="background-color: #ff9203"
+              title="おれんじ"
+              aria-label="おれんじ"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#ECC600"
+              style="background-color: #ecc600"
+              title="きいろ"
+              aria-label="きいろ"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#008152"
+              style="background-color: #008152"
+              title="みどり"
+              aria-label="みどり"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#87B0E5"
+              style="background-color: #87b0e5"
+              title="みずいろ"
+              aria-label="みずいろ"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#00488B"
+              style="background-color: #00488b"
+              title="あお"
+              aria-label="あお"
+            ></button>
+            <button
+              class="color-btn"
+              data-color="#7C4C92"
+              style="background-color: #7c4c92"
+              title="むらさき"
+              aria-label="むらさき"
+            ></button>
+            <button
+              class="add-color-btn"
+              id="add-color-btn"
+              title="いろを ついか"
+              aria-label="いろを ついか"
+            >
+              ＋
+            </button>
+          </div>
+          <div style="margin-top: 6px; text-align: center">
+            <a
+              href="https://yamoch.github.io/munsellcore/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="
+                font-size: 0.7rem;
+                color: var(--espresso);
+                text-decoration: underline;
+              "
+              >いろをマンセルカラーチャート(HEX)からえらぶ</a
+            >
+          </div>
+          <div class="btn-container" style="margin-top: 4px">
+            <button id="undo-btn">もどる</button>
+            <button id="clear-btn">いまのえを けす</button>
+          </div>
+        </section>
+
+        <section class="tool-section" aria-labelledby="save-tools-title">
+          <span id="save-tools-title" class="tool-section-title"
+            >ほぞんする</span
+          >
+          <div class="btn-container">
+            <button id="save-btn">えを ほぞん</button>
+            <button id="open-gallery-btn">いちらんを みる</button>
+          </div>
+        </section>
+
+        <section class="tool-section" aria-labelledby="library-title">
+          <span id="library-title" class="tool-section-title"
+            >ほぞんした え</span
+          >
+          <div id="library-container">
+            <span class="library-placeholder">まだ えが ないよ</span>
+          </div>
+        </section>
+
+        <section class="tool-section" aria-labelledby="play-tools-title">
+          <span id="play-tools-title" class="tool-section-title">うごかす</span>
+          <div class="btn-container">
+            <button id="start-btn">みんな うごけ</button>
+            <button id="stop-btn">とめる</button>
+            <button id="screen-reset-btn" class="wide-btn">
+              がめんを リセット
+            </button>
+          </div>
+        </section>
+
+        <section class="tool-section" aria-labelledby="snack-tools-title">
+          <span id="snack-tools-title" class="tool-section-title">おやつ</span>
+          <div class="btn-container">
+            <button id="snack-mode-btn" class="wide-btn">おやつをあげる</button>
+          </div>
+        </section>
+
+        <section class="tool-section" aria-labelledby="bg-tools-title">
+          <span id="bg-tools-title" class="tool-section-title"
+            >はいけいを かえる</span
+          >
+          <div class="color-palette" aria-label="はいけいのいろをえらぶ">
+            <button
+              class="bg-color-btn white-color active"
+              data-color="#ffffff"
+              style="background-color: #ffffff"
+              title="しろ"
+              aria-label="しろ"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#000000"
+              style="background-color: #000000"
+              title="くろ"
+              aria-label="くろ"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#9e9e9e"
+              style="background-color: #9e9e9e"
+              title="はいいろ"
+              aria-label="はいいろ"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#930028"
+              style="background-color: #930028"
+              title="あか"
+              aria-label="あか"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#E0859D"
+              style="background-color: #e0859d"
+              title="ぴんく"
+              aria-label="ぴんく"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#54443C"
+              style="background-color: #54443c"
+              title="ちゃいろ"
+              aria-label="ちゃいろ"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#FF9203"
+              style="background-color: #ff9203"
+              title="おれんじ"
+              aria-label="おれんじ"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#ECC600"
+              style="background-color: #ecc600"
+              title="きいろ"
+              aria-label="きいろ"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#008152"
+              style="background-color: #008152"
+              title="みどり"
+              aria-label="みどり"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#87B0E5"
+              style="background-color: #87b0e5"
+              title="みずいろ"
+              aria-label="みずいろ"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#00488B"
+              style="background-color: #00488b"
+              title="あお"
+              aria-label="あお"
+            ></button>
+            <button
+              class="bg-color-btn"
+              data-color="#7C4C92"
+              style="background-color: #7c4c92"
+              title="むらさき"
+              aria-label="むらさき"
+            ></button>
+          </div>
+          <div class="btn-container" style="margin-top: 6px">
+            <button id="select-bg-photo-btn" class="wide-btn">
+              しゃしんを えらぶ
+            </button>
+            <input
+              type="file"
+              id="bg-file-input"
+              accept="image/*"
+              style="display: none"
+            />
+          </div>
+        </section>
+      </div>
+    </aside>
 
     <script>
       const canvas = document.getElementById("draw-canvas");
@@ -1376,6 +1411,7 @@
       const retryBattleBtn = document.getElementById("retry-battle-btn");
       const backToSelectBtn = document.getElementById("back-to-select-btn");
       const battleStatusText = document.getElementById("battle-status-text");
+      const battleGuideText = document.getElementById("battle-guide-text");
 
       let creatures = [];
       let battleCreatures = [];
@@ -1383,6 +1419,12 @@
       let battleField = { x: 0, y: 0, radius: 0 };
       let lastSelectedImages = [];
       let battleAnimationId = null;
+
+      // プレイヤー操作用の状態管理変数
+      let battleModeType = "auto";
+      const keysPressed = {};
+      let touchDragStart = null;
+      let touchDragCurrent = null;
 
       let currentColor = "#000000";
       let drawMode = "pen";
@@ -1497,6 +1539,8 @@
         images.forEach((imgInfo, index) => {
           const card = document.createElement("div");
           card.className = "adult-card";
+          // 選択順序を保持するためのタイムスタンプ用カスタム属性
+          card.dataset.index = index;
 
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -1505,8 +1549,10 @@
             e.stopPropagation();
             if (checkbox.checked) {
               card.classList.add("selected");
+              card.dataset.selectTime = Date.now(); // 選択された瞬間の時刻を記録
             } else {
               card.classList.remove("selected");
+              delete card.dataset.selectTime;
             }
           });
           card.addEventListener("click", (e) => {
@@ -1533,21 +1579,38 @@
       }
 
       battleStartActionBtn.addEventListener("click", () => {
-        const cards = battleGallery.querySelectorAll(".adult-card");
+        const cards = Array.from(battleGallery.querySelectorAll(".adult-card"));
         const images = readSavedImages();
-        const selectedImages = [];
 
-        cards.forEach((card, idx) => {
-          const cb = card.querySelector("input[type='checkbox']");
-          if (cb && cb.checked && images[idx]) {
-            selectedImages.push(images[idx]);
-          }
-        });
+        // チェックされているカードを抽出し、選択された順番（selectTime順）に並び替える
+        const selectedCards = cards
+          .filter((card) => {
+            const cb = card.querySelector("input[type='checkbox']");
+            return cb && cb.checked;
+          })
+          .sort((a, b) => {
+            return (
+              parseInt(a.dataset.selectTime || 0) -
+              parseInt(b.dataset.selectTime || 0)
+            );
+          });
+
+        const selectedImages = selectedCards
+          .map((card) => {
+            const originalIdx = parseInt(card.dataset.index);
+            return images[originalIdx];
+          })
+          .filter(Boolean);
 
         if (selectedImages.length < 2) {
           alert("バトルには 2たい いじょうの キャラクターを えらんでね！");
           return;
         }
+
+        const selectedRadio = document.querySelector(
+          'input[name="battle-mode-type"]:checked',
+        );
+        battleModeType = selectedRadio ? selectedRadio.value : "auto";
 
         lastSelectedImages = selectedImages;
         battleSetupScreen.classList.remove("open");
@@ -1563,7 +1626,15 @@
 
         battleCanvas.style.display = "block";
         battleHud.style.display = "flex";
-        battleStatusText.textContent = "バトルちゅう！おしだせ！";
+
+        if (battleModeType === "manual") {
+          battleStatusText.textContent = "きみを 操作して 勝ち残れ！";
+          battleGuideText.style.display = "block";
+        } else {
+          battleStatusText.textContent = "バトルちゅう！おしだせ！";
+          battleGuideText.style.display = "none";
+        }
+
         retryBattleBtn.style.display = "none";
         backToSelectBtn.style.display = "none";
         exitBattleBtn.style.display = "inline-block";
@@ -1608,6 +1679,12 @@
           document.body.appendChild(creature);
 
           const personalitySeed = Math.random();
+          // 最初に選択されたキャラクター（index === 0）をプレイヤーにする
+          const isPlayer = battleModeType === "manual" && idx === 0;
+
+          if (isPlayer) {
+            creature.style.filter = "drop-shadow(0 0 10px #FF9203)";
+          }
 
           return {
             element: creature,
@@ -1616,9 +1693,10 @@
             width: width,
             height: height,
             mass: scaleFactor * 2.5,
-            speedX: (Math.random() - 0.5) * 3.0,
-            speedY: (Math.random() - 0.5) * 3.0,
+            speedX: (Math.random() - 0.5) * 1.8,
+            speedY: (Math.random() - 0.5) * 1.8,
             personality: personalitySeed,
+            isPlayer: isPlayer,
             isAlive: true,
             victoryTimer: 0,
           };
@@ -1684,7 +1762,7 @@
         el.className = "battle-pop-effect";
         el.textContent = text;
         el.style.left = x + "px";
-        el.style.top = x ? y + "px" : "0px";
+        el.style.top = y + "px";
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 800);
       }
@@ -1696,80 +1774,141 @@
 
         const activeAliveList = battleCreatures.filter((c) => c.isAlive);
 
-        if (activeAliveList.length <= 1 && battleCreatures.length > 1) {
-          if (activeAliveList.length === 1) {
-            const winner = activeAliveList[0];
+        if (battleModeType === "manual") {
+          const playerChar = battleCreatures.find((c) => c.isPlayer);
+          const enemiesAlive = activeAliveList.filter((c) => !c.isPlayer);
 
-            winner.speedX = 0;
-            winner.speedY = 0;
+          if (playerChar && !playerChar.isAlive) {
+            isBattleActive = false;
+            battleStatusText.textContent = "まけちゃった…！";
+            battleGuideText.style.display = "none";
+            retryBattleBtn.style.display = "inline-block";
+            backToSelectBtn.style.display = "inline-block";
+            exitBattleBtn.style.display = "none";
+            showPopupEffect("ゲームオーバー", battleField.x, battleField.y);
+            return;
+          }
 
-            winner.victoryTimer += 0.08;
-            const pulse = 1 + Math.sin(winner.victoryTimer * 5) * 0.35;
-            const scaleXFactor = winner.speedX < 0 ? -1 : 1;
-            winner.element.style.transform = `translate(${winner.x}px, ${winner.y}px) scaleX(${scaleXFactor}) scale(${pulse})`;
+          if (playerChar && playerChar.isAlive && enemiesAlive.length === 0) {
+            playerChar.speedX = 0;
+            playerChar.speedY = 0;
+            playerChar.victoryTimer += 0.08;
+            const pulse = 1 + Math.sin(playerChar.victoryTimer * 5) * 0.35;
+            playerChar.element.style.transform = `translate(${playerChar.x}px, ${playerChar.y}px) scale(${pulse})`;
 
-            battleStatusText.textContent = `かったね おめでとう！`;
+            battleStatusText.textContent = "かちました！おめでとう！";
+            battleGuideText.style.display = "none";
             retryBattleBtn.style.display = "inline-block";
             backToSelectBtn.style.display = "inline-block";
             exitBattleBtn.style.display = "none";
 
-            if (winner.victoryTimer < 0.1) {
-              showPopupEffect(
-                "はっけよいのこった！",
-                battleField.x,
-                battleField.y - 50,
-              );
+            if (playerChar.victoryTimer < 0.1) {
+              showPopupEffect("大勝利！", battleField.x, battleField.y - 50);
             }
             battleAnimationId = requestAnimationFrame(updateBattle);
             return;
-          } else {
-            isBattleActive = false;
-            battleStatusText.textContent = `おみごと！りょうしゃドロー！`;
-            retryBattleBtn.style.display = "inline-block";
-            backToSelectBtn.style.display = "inline-block";
-            exitBattleBtn.style.display = "none";
-            return;
+          }
+        } else {
+          if (activeAliveList.length <= 1 && battleCreatures.length > 1) {
+            if (activeAliveList.length === 1) {
+              const winner = activeAliveList[0];
+              winner.speedX = 0;
+              winner.speedY = 0;
+              winner.victoryTimer += 0.08;
+              const pulse = 1 + Math.sin(winner.victoryTimer * 5) * 0.35;
+              const scaleXFactor = winner.speedX < 0 ? -1 : 1;
+              winner.element.style.transform = `translate(${winner.x}px, ${winner.y}px) scaleX(${scaleXFactor}) scale(${pulse})`;
+
+              battleStatusText.textContent = `かったね おめでとう！`;
+              retryBattleBtn.style.display = "inline-block";
+              backToSelectBtn.style.display = "inline-block";
+              exitBattleBtn.style.display = "none";
+
+              if (winner.victoryTimer < 0.1) {
+                showPopupEffect(
+                  "はっけよいのこった！",
+                  battleField.x,
+                  battleField.y - 50,
+                );
+              }
+              battleAnimationId = requestAnimationFrame(updateBattle);
+              return;
+            } else {
+              isBattleActive = false;
+              battleStatusText.textContent = `おみごと！りょうしゃ ひきわけ！`;
+              retryBattleBtn.style.display = "inline-block";
+              backToSelectBtn.style.display = "inline-block";
+              exitBattleBtn.style.display = "none";
+              return;
+            }
           }
         }
 
         battleCreatures.forEach((c) => {
           if (!c.isAlive) return;
 
+          if (c.isPlayer) {
+            let accelX = 0;
+            let accelY = 0;
+            const power = 0.55;
+
+            if (keysPressed["ArrowLeft"] || keysPressed["KeyA"])
+              accelX -= power;
+            if (keysPressed["ArrowRight"] || keysPressed["KeyD"])
+              accelX += power;
+            if (keysPressed["ArrowUp"] || keysPressed["KeyW"]) accelY -= power;
+            if (keysPressed["ArrowDown"] || keysPressed["KeyS"])
+              accelY += power;
+
+            if (touchDragStart && touchDragCurrent) {
+              const dx = touchDragCurrent.x - touchDragStart.x;
+              const dy = touchDragCurrent.y - touchDragStart.y;
+              const dist = Math.hypot(dx, dy);
+              if (dist > 3) {
+                accelX += (dx / dist) * power * 1.2;
+                accelY += (dy / dist) * power * 1.2;
+              }
+            }
+
+            c.speedX += accelX;
+            c.speedY += accelY;
+          } else {
+            let target = null;
+            let minTargetDist = Infinity;
+            activeAliveList.forEach((other) => {
+              if (other === c) return;
+              const ox = other.x + other.width / 2;
+              const oy = other.y + other.height / 2;
+              const cx = c.x + c.width / 2;
+              const cy = c.y + c.height / 2;
+              const dist = Math.hypot(ox - cx, oy - cy);
+              if (dist < minTargetDist) {
+                minTargetDist = dist;
+                target = other;
+              }
+            });
+
+            if (target) {
+              const tx = target.x + target.width / 2;
+              const ty = target.y + target.height / 2;
+              const cx = c.x + c.width / 2;
+              const cy = c.y + c.height / 2;
+              const angleToTarget = Math.atan2(ty - cy, tx - cx);
+
+              const rushForce = 0.18 + c.personality * 0.22;
+              const wobble =
+                Math.sin(Date.now() * 0.01 + c.personality * 10) * 0.8;
+
+              c.speedX += Math.cos(angleToTarget + wobble) * rushForce;
+              c.speedY += Math.sin(angleToTarget + wobble) * rushForce;
+            }
+          }
+
           c.x += c.speedX;
           c.y += c.speedY;
 
-          let target = null;
-          let minTargetDist = Infinity;
-          activeAliveList.forEach((other) => {
-            if (other === c) return;
-            const ox = other.x + other.width / 2;
-            const oy = other.y + other.height / 2;
-            const cx = c.x + c.width / 2;
-            const cy = c.y + c.height / 2;
-            const dist = Math.hypot(ox - cx, oy - cy);
-            if (dist < minTargetDist) {
-              minTargetDist = dist;
-              target = other;
-            }
-          });
-
-          if (target) {
-            const tx = target.x + target.width / 2;
-            const ty = target.y + target.height / 2;
-            const cx = c.x + c.width / 2;
-            const cy = c.y + c.height / 2;
-            const angleToTarget = Math.atan2(ty - cy, tx - cx);
-
-            const rushForce = 0.25 + c.personality * 0.3;
-            const wobble =
-              Math.sin(Date.now() * 0.01 + c.personality * 10) * 0.8;
-
-            c.speedX += Math.cos(angleToTarget + wobble) * rushForce;
-            c.speedY += Math.sin(angleToTarget + wobble) * rushForce;
-          }
-
           const currentSpd = Math.hypot(c.speedX, c.speedY);
-          const maxSpd = 11.5;
+          const maxSpd = 8.5;
           if (currentSpd > maxSpd) {
             c.speedX = (c.speedX / currentSpd) * maxSpd;
             c.speedY = (c.speedY / currentSpd) * maxSpd;
@@ -1809,8 +1948,8 @@
               other.y += Math.sin(angle) * overlap * ratioOther;
 
               const isTwoFighters = activeAliveList.length === 2;
-              const randomMultiplier = 0.4 + Math.random() * 4.2;
-              const pushPower = (isTwoFighters ? 16.0 : 9.0) * randomMultiplier;
+              const randomMultiplier = 0.4 + Math.random() * 3.5;
+              const pushPower = (isTwoFighters ? 12.0 : 7.0) * randomMultiplier;
 
               c.speedX = c.speedX * 0.02 - Math.cos(angle) * pushPower;
               c.speedY = c.speedY * 0.02 - Math.sin(angle) * pushPower;
@@ -1842,12 +1981,83 @@
           if (distFromCenter > battleField.radius) {
             c.isAlive = false;
             c.element.remove();
-            showPopupEffect("リタイア！", centerX, centerY);
+            showPopupEffect(
+              c.isPlayer ? "アウト！" : "リタイア！",
+              centerX,
+              centerY,
+            );
           }
         });
 
         battleAnimationId = requestAnimationFrame(updateBattle);
       }
+
+      window.addEventListener("keydown", (e) => {
+        if (!isBattleActive || battleModeType !== "manual") return;
+        if (
+          [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight",
+            "Space",
+            "KeyW",
+            "KeyA",
+            "KeyS",
+            "KeyD",
+          ].includes(e.code)
+        ) {
+          e.preventDefault();
+        }
+        keysPressed[e.code] = true;
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (!isBattleActive || battleModeType !== "manual") return;
+        if (
+          [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight",
+            "Space",
+            "KeyW",
+            "KeyA",
+            "KeyS",
+            "KeyD",
+          ].includes(e.code)
+        ) {
+          e.preventDefault();
+        }
+        keysPressed[e.code] = false;
+      });
+
+      window.addEventListener(
+        "touchstart",
+        (e) => {
+          if (!isBattleActive || battleModeType !== "manual") return;
+          const touch = e.touches[0];
+          touchDragStart = { x: touch.clientX, y: touch.clientY };
+          touchDragCurrent = { x: touch.clientX, y: touch.clientY };
+        },
+        { passive: true },
+      );
+
+      window.addEventListener(
+        "touchmove",
+        (e) => {
+          if (!isBattleActive || battleModeType !== "manual" || !touchDragStart)
+            return;
+          const touch = e.touches[0];
+          touchDragCurrent = { x: touch.clientX, y: touch.clientY };
+        },
+        { passive: true },
+      );
+
+      window.addEventListener("touchend", () => {
+        touchDragStart = null;
+        touchDragCurrent = null;
+      });
 
       function endBattleMode() {
         isBattleActive = false;
@@ -1857,6 +2067,7 @@
         }
         battleCanvas.style.display = "none";
         battleHud.style.display = "none";
+        battleGuideText.style.display = "none";
 
         drawingToolbar.classList.remove("battle-hidden");
         if (snackModeActive) {
@@ -1871,6 +2082,9 @@
 
         battleCreatures.forEach((c) => c.element.remove());
         battleCreatures = [];
+        touchDragStart = null;
+        touchDragCurrent = null;
+        Object.keys(keysPressed).forEach((k) => delete keysPressed[k]);
       }
 
       function renderAdultGallery(isSimpleList = false) {
@@ -2289,12 +2503,10 @@
         ctx.save();
         if (drawMode === "eraser") {
           ctx.globalCompositeOperation = "destination-out";
-          // スライダーの値（brushSize）を基準にした消しゴムの太さ
           ctx.lineWidth = Math.max(2, brushSize * (smoothedPressure * 1.2));
         } else {
           ctx.globalCompositeOperation = "source-over";
           ctx.strokeStyle = currentColor;
-          // スライダーの値（brushSize）を基準にしたペンの太さ
           ctx.lineWidth = Math.max(1, brushSize * (smoothedPressure * 1.2));
         }
 
@@ -2604,11 +2816,11 @@
         let posX = Math.random() * (window.innerWidth - width);
         let posY = Math.random() * (window.innerHeight - height);
 
-        let speedX = (Math.random() - 0.5) * 3;
-        let speedY = (Math.random() - 0.5) * 3;
+        let speedX = (Math.random() - 0.5) * 2.0;
+        let speedY = (Math.random() - 0.5) * 2.0;
 
-        if (Math.abs(speedX) < 1) speedX = speedX < 0 ? -1 : 1;
-        if (Math.abs(speedY) < 1) speedY = speedY < 0 ? -1 : 1;
+        if (Math.abs(speedX) < 0.8) speedX = speedX < 0 ? -0.8 : 0.8;
+        if (Math.abs(speedY) < 0.8) speedY = speedY < 0 ? -0.8 : 0.8;
 
         let stepCount = Math.random() * 100;
         const creatureObj = {
@@ -2678,15 +2890,15 @@
               if (dist < 15) {
                 scaleMultiplier = Math.min(2.5, scaleMultiplier + 0.15);
                 updateSize();
-                closestSnack.element.remove();
+                closestSrcSnack = closestSnack.element.remove();
                 activeSnacks = activeSnacks.filter((s) => s !== closestSnack);
               } else {
-                speedX += (dx / dist) * 0.3;
-                speedY += (dy / dist) * 0.3;
+                speedX += (dx / dist) * 0.25;
+                speedY += (dy / dist) * 0.25;
                 const spd = Math.hypot(speedX, speedY);
-                if (spd > 2.0) {
-                  speedX = (speedX / spd) * 2.0;
-                  speedY = (speedY / spd) * 2.0;
+                if (spd > 1.6) {
+                  speedX = (speedX / spd) * 1.6;
+                  speedY = (speedY / spd) * 1.6;
                 }
               }
             }
@@ -2711,15 +2923,15 @@
 
               const tempSpeedX = speedX;
               const tempSpeedY = speedY;
-              speedX = other.speedX * 0.8 - Math.cos(angle) * 2;
-              speedY = other.speedY * 0.8 - Math.sin(angle) * 2;
-              other.speedX = tempSpeedX * 0.8 + Math.cos(angle) * 2;
-              other.speedY = tempSpeedY * 0.8 + Math.sin(angle) * 2;
+              speedX = other.speedX * 0.8 - Math.cos(angle) * 1.5;
+              speedY = other.speedY * 0.8 - Math.sin(angle) * 1.5;
+              other.speedX = tempSpeedX * 0.8 + Math.cos(angle) * 1.5;
+              other.speedY = tempSpeedY * 0.8 + Math.sin(angle) * 1.5;
             }
           });
 
-          stepCount += 0.2;
-          let tilt = Math.sin(stepCount) * 15;
+          stepCount += 0.15;
+          let tilt = Math.sin(stepCount) * 12;
           let scaleX = speedX < 0 ? -1 : 1;
 
           if (posX <= 0 || posX + width >= window.innerWidth) {
