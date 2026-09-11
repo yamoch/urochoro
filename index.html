@@ -178,7 +178,8 @@
 
       /* モーダル共通画面 */
       #adult-mode-screen,
-      #battle-setup-screen {
+      #battle-setup-screen,
+      #drill-screen {
         position: fixed;
         top: 0;
         left: 0;
@@ -195,7 +196,8 @@
       }
 
       #adult-mode-screen.open,
-      #battle-setup-screen.open {
+      #battle-setup-screen.open,
+      #drill-screen.open {
         display: flex;
       }
 
@@ -436,7 +438,9 @@
       #save-btn,
       #start-btn,
       #battle-start-action-btn,
-      #retry-battle-btn {
+      #retry-battle-btn,
+      #drill-submit-btn,
+      .tenkey-btn {
         background-color: var(--terracotta);
         border-color: var(--terracotta);
         color: var(--espresso);
@@ -444,7 +448,9 @@
       #save-btn:hover,
       #start-btn:hover,
       #battle-start-action-btn:hover,
-      #retry-battle-btn:hover {
+      #retry-battle-btn:hover,
+      #drill-submit-btn:hover,
+      .tenkey-btn:hover {
         background-color: var(--espresso);
         border-color: var(--espresso);
         color: var(--cream);
@@ -910,6 +916,8 @@
         }
       }
     </style>
+    <!-- ドリル用別ファイルを読み込み -->
+    <script src="drill/drill.js"></script>
   </head>
   <body>
     <!-- 右上ハンバーガーメニューボタン -->
@@ -964,6 +972,169 @@
         えらんだキャラクターを うごかせるよ）
       </p>
       <div id="battle-gallery" class="adult-gallery"></div>
+    </div>
+
+    <!-- ドリル画面（バトル開始前の問題解答用） -->
+    <div id="drill-screen">
+      <div class="adult-header">
+        <h2>さんすうドリル（バトルへの かぎ）</h2>
+        <div class="adult-header-actions">
+          <button id="close-drill-btn">やめる</button>
+        </div>
+      </div>
+      <div
+        style="
+          max-width: 320px;
+          margin: 20px auto;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        "
+      >
+        <p
+          style="font-size: 0.95rem; font-weight: bold; color: var(--espresso)"
+        >
+          バトルをするには、つぎの もんだいを クリアしてね！
+        </p>
+        <div
+          id="drill-question-box"
+          style="
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--espresso);
+            background: rgba(232, 183, 177, 0.25);
+            padding: 15px;
+            border-radius: 16px;
+            border: 2px solid var(--espresso);
+          "
+        >
+          12 + 11 = ?
+        </div>
+        <!-- 画面上の入力ディスプレイ -->
+        <div
+          id="drill-display-answer"
+          style="
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--espresso);
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--espresso);
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 2px;
+          "
+        >
+          こたえ
+        </div>
+        <!-- テンキーパッド -->
+        <div
+          style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px"
+        >
+          <button
+            class="tenkey-btn"
+            data-val="7"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            7
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="8"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            8
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="9"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            9
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="4"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            4
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="5"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            5
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="6"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            6
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="1"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            1
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="2"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            2
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="3"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            3
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="clear"
+            style="
+              font-size: 1rem;
+              padding: 12px;
+              background-color: var(--espresso);
+              color: var(--cream);
+            "
+          >
+            けす
+          </button>
+          <button
+            class="tenkey-btn"
+            data-val="0"
+            style="font-size: 1.2rem; padding: 12px"
+          >
+            0
+          </button>
+          <button
+            id="drill-submit-btn"
+            class="tenkey-btn"
+            style="font-size: 1rem; padding: 12px"
+          >
+            OK
+          </button>
+        </div>
+        <p
+          id="drill-feedback-text"
+          style="
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--terracotta);
+            min-height: 20px;
+          "
+        ></p>
+      </div>
     </div>
 
     <!-- おとなようモード / 一覧画面 -->
@@ -1405,7 +1576,7 @@
         "adult-batch-download-container",
       );
 
-      // バトルモード関連要素
+      // バトルモード・ドリル関連要素
       const toBattleModeBtn = document.getElementById("to-battle-mode");
       const battleSetupScreen = document.getElementById("battle-setup-screen");
       const closeBattleSetupBtn = document.getElementById("close-battle-setup");
@@ -1413,6 +1584,21 @@
       const battleStartActionBtn = document.getElementById(
         "battle-start-action-btn",
       );
+
+      const drillScreen = document.getElementById("drill-screen");
+      const closeDrillBtn = document.getElementById("close-drill-btn");
+      const drillQuestionBox = document.getElementById("drill-question-box");
+      const drillDisplayAnswer = document.getElementById(
+        "drill-display-answer",
+      );
+      const drillSubmitBtn = document.getElementById("drill-submit-btn");
+      const drillFeedbackText = document.getElementById("drill-feedback-text");
+      const tenkeyBtns = document.querySelectorAll(".tenkey-btn[data-val]");
+
+      let currentDrillAnswer = null;
+      let currentInputString = "";
+      let pendingBattleImages = null;
+
       const battleCanvas = document.getElementById("battle-canvas");
       const battleCtx = battleCanvas.getContext("2d");
       const battleHud = document.getElementById("battle-hud");
@@ -1429,7 +1615,6 @@
       let lastSelectedImages = [];
       let battleAnimationId = null;
 
-      // プレイヤー操作用の状態管理変数
       let battleModeType = "auto";
       const keysPressed = {};
       let touchDragStart = null;
@@ -1485,6 +1670,7 @@
         menuModal.classList.remove("open");
         adultModeScreen.classList.remove("open");
         battleSetupScreen.classList.remove("open");
+        drillScreen.classList.remove("open");
         if (isBattleActive) {
           endBattleMode();
         }
@@ -1520,13 +1706,19 @@
         battleSetupScreen.classList.remove("open");
       });
 
+      closeDrillBtn.addEventListener("click", () => {
+        drillScreen.classList.remove("open");
+        pendingBattleImages = null;
+      });
+
       exitBattleBtn.addEventListener("click", () => {
         endBattleMode();
       });
 
       retryBattleBtn.addEventListener("click", () => {
         if (lastSelectedImages.length >= 2) {
-          startBattleMode(lastSelectedImages);
+          endBattleMode();
+          openDrillScreen(lastSelectedImages);
         }
       });
 
@@ -1621,17 +1813,80 @@
 
         lastSelectedImages = selectedImages;
         battleSetupScreen.classList.remove("open");
-        startBattleMode(selectedImages);
+
+        endBattleMode();
+        openDrillScreen(selectedImages);
       });
 
+      function openDrillScreen(selectedImages) {
+        pendingBattleImages = selectedImages;
+        drillFeedbackText.textContent = "";
+        currentInputString = "";
+        drillDisplayAnswer.textContent = "こたえ";
+
+        if (
+          window.DrillModule &&
+          typeof window.DrillModule.generateProblem === "function"
+        ) {
+          const problem = window.DrillModule.generateProblem();
+          drillQuestionBox.textContent = `${problem.questionText} = ?`;
+          currentDrillAnswer = problem.answer;
+        } else {
+          drillQuestionBox.textContent = "5 + 3 = ?";
+          currentDrillAnswer = 8;
+        }
+
+        drillScreen.classList.add("open");
+      }
+
+      tenkeyBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const val = btn.getAttribute("data-val");
+          if (val === "clear") {
+            currentInputString = "";
+            drillDisplayAnswer.textContent = "こたえ";
+          } else {
+            if (currentInputString.length < 4) {
+              currentInputString += val;
+              drillDisplayAnswer.textContent = currentInputString;
+            }
+          }
+        });
+      });
+
+      drillSubmitBtn.addEventListener("click", checkDrillAnswer);
+
+      function checkDrillAnswer() {
+        if (currentInputString === "") {
+          drillFeedbackText.textContent = "すうじを にゅうりょくしてね！";
+          return;
+        }
+        const userVal = parseInt(currentInputString, 10);
+
+        if (userVal === currentDrillAnswer) {
+          drillFeedbackText.textContent = "せいかい！バトルへ すすむよ！";
+          setTimeout(() => {
+            drillScreen.classList.remove("open");
+            if (pendingBattleImages) {
+              startBattleMode(pendingBattleImages);
+              pendingBattleImages = null;
+            }
+          }, 600);
+        } else {
+          drillFeedbackText.textContent =
+            "ざんねん！もういちど チャレンジしてね！";
+          currentInputString = "";
+          drillDisplayAnswer.textContent = "こたえ";
+        }
+      }
+
       function startBattleMode(selectedImages) {
-        screenResetBtn.click();
+        endBattleMode();
         isBattleActive = true;
 
         drawingToolbar.classList.add("battle-hidden");
         canvas.className = "battle-cursor";
 
-        // ここでバトル用キャンバスとHUDを確実に表示しサイズを設定する
         battleCanvas.style.display = "block";
         battleHud.style.display = "flex";
 
@@ -1640,7 +1895,6 @@
         const radius = Math.min(cx, cy) * 0.72;
         battleField = { x: cx, y: cy, radius: radius };
 
-        // バトルフィールドの背景描画を確実に実行
         drawBattleField();
 
         if (battleModeType === "manual") {
@@ -1701,8 +1955,8 @@
             width: width,
             height: height,
             mass: scaleFactor * 2.5,
-            speedX: (Math.random() - 0.5) * 1.8,
-            speedY: (Math.random() - 0.5) * 1.8,
+            speedX: (Math.random() - 0.5) * 0.8, // 速度をゆっくりに調整
+            speedY: (Math.random() - 0.5) * 0.8, // 速度をゆっくりに調整
             personality: personalitySeed,
             isPlayer: isPlayer,
             isAlive: true,
@@ -1858,7 +2112,7 @@
           if (c.isPlayer) {
             let accelX = 0;
             let accelY = 0;
-            const power = 0.55;
+            const power = 0.35; // プレイヤーの移動加速も調整
 
             if (keysPressed["ArrowLeft"] || keysPressed["KeyA"])
               accelX -= power;
@@ -1903,7 +2157,7 @@
               const cy = c.y + c.height / 2;
               const angleToTarget = Math.atan2(ty - cy, tx - cx);
 
-              const rushForce = 0.18 + c.personality * 0.22;
+              const rushForce = 0.08 + c.personality * 0.12; // 追跡の力を控えめに調整
               const wobble =
                 Math.sin(Date.now() * 0.01 + c.personality * 10) * 0.8;
 
@@ -1916,7 +2170,7 @@
           c.y += c.speedY;
 
           const currentSpd = Math.hypot(c.speedX, c.speedY);
-          const maxSpd = 8.5;
+          const maxSpd = 4.5; // 最高速度を抑えてゆっくりに
           if (currentSpd > maxSpd) {
             c.speedX = (c.speedX / currentSpd) * maxSpd;
             c.speedY = (c.speedY / currentSpd) * maxSpd;
@@ -1956,8 +2210,8 @@
               other.y += Math.sin(angle) * overlap * ratioOther;
 
               const isTwoFighters = activeAliveList.length === 2;
-              const randomMultiplier = 0.4 + Math.random() * 3.5;
-              const pushPower = (isTwoFighters ? 12.0 : 7.0) * randomMultiplier;
+              const randomMultiplier = 0.4 + Math.random() * 2.0;
+              const pushPower = (isTwoFighters ? 6.0 : 4.0) * randomMultiplier; // 衝突時の押し出しパワーを調整
 
               c.speedX = c.speedX * 0.02 - Math.cos(angle) * pushPower;
               c.speedY = c.speedY * 0.02 - Math.sin(angle) * pushPower;
@@ -2088,8 +2342,17 @@
           canvas.className = "fill-cursor";
         }
 
-        battleCreatures.forEach((c) => c.element.remove());
+        battleCreatures.forEach((c) => {
+          if (c && c.element && c.element.parentNode) {
+            c.element.remove();
+          }
+        });
         battleCreatures = [];
+
+        document
+          .querySelectorAll(".wandering-creature")
+          .forEach((el) => el.remove());
+
         touchDragStart = null;
         touchDragCurrent = null;
         Object.keys(keysPressed).forEach((k) => delete keysPressed[k]);
@@ -2463,6 +2726,7 @@
       }
 
       function handleCanvasDown(e) {
+        // バトルモード中は絵を描けないように変更
         if (isBattleActive) return;
 
         const pos = getEventPosAndPressure(e);
@@ -2487,6 +2751,7 @@
       }
 
       function handleCanvasMove(e) {
+        // バトルモード中は絵を描けないように変更
         if (isBattleActive || !isDrawing || drawMode === "fill") return;
         e.preventDefault();
         const pos = getEventPosAndPressure(e);
@@ -2869,7 +3134,7 @@
             this.isRunning = false;
             if (this.animationId) cancelAnimationFrame(this.animationId);
             creatures = creatures.filter((c) => c !== this);
-            creature.remove();
+            if (creature && creature.parentNode) creature.remove();
           },
         };
 
