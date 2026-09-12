@@ -1955,8 +1955,8 @@
             width: width,
             height: height,
             mass: scaleFactor * 2.5,
-            speedX: (Math.random() - 0.5) * 0.8, // 速度をゆっくりに調整
-            speedY: (Math.random() - 0.5) * 0.8, // 速度をゆっくりに調整
+            speedX: (Math.random() - 0.5) * 0.8,
+            speedY: (Math.random() - 0.5) * 0.8,
             personality: personalitySeed,
             isPlayer: isPlayer,
             isAlive: true,
@@ -2112,7 +2112,7 @@
           if (c.isPlayer) {
             let accelX = 0;
             let accelY = 0;
-            const power = 0.35; // プレイヤーの移動加速も調整
+            const power = 0.35;
 
             if (keysPressed["ArrowLeft"] || keysPressed["KeyA"])
               accelX -= power;
@@ -2157,7 +2157,7 @@
               const cy = c.y + c.height / 2;
               const angleToTarget = Math.atan2(ty - cy, tx - cx);
 
-              const rushForce = 0.08 + c.personality * 0.12; // 追跡の力を控えめに調整
+              const rushForce = 0.08 + c.personality * 0.12;
               const wobble =
                 Math.sin(Date.now() * 0.01 + c.personality * 10) * 0.8;
 
@@ -2170,7 +2170,7 @@
           c.y += c.speedY;
 
           const currentSpd = Math.hypot(c.speedX, c.speedY);
-          const maxSpd = 4.5; // 最高速度を抑えてゆっくりに
+          const maxSpd = 4.5;
           if (currentSpd > maxSpd) {
             c.speedX = (c.speedX / currentSpd) * maxSpd;
             c.speedY = (c.speedY / currentSpd) * maxSpd;
@@ -2211,7 +2211,7 @@
 
               const isTwoFighters = activeAliveList.length === 2;
               const randomMultiplier = 0.4 + Math.random() * 2.0;
-              const pushPower = (isTwoFighters ? 6.0 : 4.0) * randomMultiplier; // 衝突時の押し出しパワーを調整
+              const pushPower = (isTwoFighters ? 6.0 : 4.0) * randomMultiplier;
 
               c.speedX = c.speedX * 0.02 - Math.cos(angle) * pushPower;
               c.speedY = c.speedY * 0.02 - Math.sin(angle) * pushPower;
@@ -2611,41 +2611,70 @@
       let customColorCount = 0;
 
       addColorBtn.addEventListener("click", () => {
-        customColorCount++;
-        const randomColor =
-          "#" +
-          Math.floor(Math.random() * 16581375)
-            .toString(16)
-            .padStart(6, "0");
+        const isMobile = window.innerWidth <= 768;
 
-        const newWrapper = document.createElement("div");
-        newWrapper.className = "color-picker-wrapper";
-        newWrapper.title = `そのたの いろ ${customColorCount}`;
-        newWrapper.setAttribute(
-          "aria-label",
-          `そのたの いろ ${customColorCount}`,
-        );
+        if (isMobile) {
+          // スマホで開いたとき：新しい色パレットボタンを追加するのではなく、システムカラーピッカーを即座に開いて色表から選べるようにする
+          const tempInput = document.createElement("input");
+          tempInput.type = "color";
+          tempInput.value = currentColor;
+          tempInput.style.position = "absolute";
+          tempInput.style.opacity = "0";
+          document.body.appendChild(tempInput);
 
-        const newInput = document.createElement("input");
-        newInput.type = "color";
-        newInput.className = "custom-color-input";
-        newInput.value = randomColor;
+          tempInput.addEventListener("input", (e) => {
+            currentColor = e.target.value;
+            // 既存の選択状態を解除して、一番最近使ったカスタム色を表現するハイライト用要素などを更新
+          });
+          tempInput.addEventListener("change", (e) => {
+            currentColor = e.target.value;
+            if (drawMode === "pen") {
+              ctx.strokeStyle = currentColor;
+              ctx.fillStyle = currentColor;
+            }
+            tempInput.remove();
+          });
 
-        newWrapper.appendChild(newInput);
+          // プログラムからカラーピッカーモーダルを起動
+          tempInput.click();
+        } else {
+          // PCで開いたとき：従来通りカスタムカラーボタンを追加する
+          customColorCount++;
+          const randomColor =
+            "#" +
+            Math.floor(Math.random() * 16581375)
+              .toString(16)
+              .padStart(6, "0");
 
-        colorPalette.insertBefore(newWrapper, addColorBtn);
-        bindColorEvents();
+          const newWrapper = document.createElement("div");
+          newWrapper.className = "color-picker-wrapper";
+          newWrapper.title = `そのたの いろ ${customColorCount}`;
+          newWrapper.setAttribute(
+            "aria-label",
+            `そのたの いろ ${customColorCount}`,
+          );
 
-        document
-          .querySelectorAll(".color-btn, .color-picker-wrapper")
-          .forEach((b) => b.classList.remove("active"));
-        newWrapper.classList.add("active");
-        newWrapper.style.borderStyle = "solid";
-        newWrapper.style.background = randomColor;
-        currentColor = randomColor;
-        if (drawMode === "pen") {
-          ctx.strokeStyle = currentColor;
-          ctx.fillStyle = currentColor;
+          const newInput = document.createElement("input");
+          newInput.type = "color";
+          newInput.className = "custom-color-input";
+          newInput.value = randomColor;
+
+          newWrapper.appendChild(newInput);
+
+          colorPalette.insertBefore(newWrapper, addColorBtn);
+          bindColorEvents();
+
+          document
+            .querySelectorAll(".color-btn, .color-picker-wrapper")
+            .forEach((b) => b.classList.remove("active"));
+          newWrapper.classList.add("active");
+          newWrapper.style.borderStyle = "solid";
+          newWrapper.style.background = randomColor;
+          currentColor = randomColor;
+          if (drawMode === "pen") {
+            ctx.strokeStyle = currentColor;
+            ctx.fillStyle = currentColor;
+          }
         }
       });
 
@@ -2726,7 +2755,6 @@
       }
 
       function handleCanvasDown(e) {
-        // バトルモード中は絵を描けないように変更
         if (isBattleActive) return;
 
         const pos = getEventPosAndPressure(e);
@@ -2751,7 +2779,6 @@
       }
 
       function handleCanvasMove(e) {
-        // バトルモード中は絵を描けないように変更
         if (isBattleActive || !isDrawing || drawMode === "fill") return;
         e.preventDefault();
         const pos = getEventPosAndPressure(e);
