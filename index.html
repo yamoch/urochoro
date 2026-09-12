@@ -1483,7 +1483,7 @@
             <button
               class="bg-color-btn"
               data-color="#7C4C92"
-              style="background-color: #7c4c92"
+              style="background-color: #7C4C92"
               title="むらさき"
               aria-label="むらさき"
             ></button>
@@ -2610,72 +2610,51 @@
       const colorPalette = document.getElementById("color-palette");
       let customColorCount = 0;
 
+      // 【改善】「＋」ボタンをクリックした時のカラー選択・追加処理の修正
       addColorBtn.addEventListener("click", () => {
-        const isMobile = window.innerWidth <= 768;
+        customColorCount++;
+        const randomColor =
+          "#" +
+          Math.floor(Math.random() * 16581375)
+            .toString(16)
+            .padStart(6, "0");
 
-        if (isMobile) {
-          // スマホで開いたとき：新しい色パレットボタンを追加するのではなく、システムカラーピッカーを即座に開いて色表から選べるようにする
-          const tempInput = document.createElement("input");
-          tempInput.type = "color";
-          tempInput.value = currentColor;
-          tempInput.style.position = "absolute";
-          tempInput.style.opacity = "0";
-          document.body.appendChild(tempInput);
+        const newWrapper = document.createElement("div");
+        newWrapper.className = "color-picker-wrapper active";
+        newWrapper.title = `そのたの いろ ${customColorCount}`;
+        newWrapper.setAttribute(
+          "aria-label",
+          `そのたの いろ ${customColorCount}`,
+        );
+        newWrapper.style.borderStyle = "solid";
+        newWrapper.style.background = randomColor;
 
-          tempInput.addEventListener("input", (e) => {
-            currentColor = e.target.value;
-            // 既存の選択状態を解除して、一番最近使ったカスタム色を表現するハイライト用要素などを更新
-          });
-          tempInput.addEventListener("change", (e) => {
-            currentColor = e.target.value;
-            if (drawMode === "pen") {
-              ctx.strokeStyle = currentColor;
-              ctx.fillStyle = currentColor;
-            }
-            tempInput.remove();
-          });
+        const newInput = document.createElement("input");
+        newInput.type = "color";
+        newInput.className = "custom-color-input";
+        newInput.value = randomColor;
 
-          // プログラムからカラーピッカーモーダルを起動
-          tempInput.click();
-        } else {
-          // PCで開いたとき：従来通りカスタムカラーボタンを追加する
-          customColorCount++;
-          const randomColor =
-            "#" +
-            Math.floor(Math.random() * 16581375)
-              .toString(16)
-              .padStart(6, "0");
+        newWrapper.appendChild(newInput);
+        colorPalette.insertBefore(newWrapper, addColorBtn);
 
-          const newWrapper = document.createElement("div");
-          newWrapper.className = "color-picker-wrapper";
-          newWrapper.title = `そのたの いろ ${customColorCount}`;
-          newWrapper.setAttribute(
-            "aria-label",
-            `そのたの いろ ${customColorCount}`,
-          );
+        // 既存の選択状態を解除
+        document
+          .querySelectorAll(".color-btn, .color-picker-wrapper")
+          .forEach((b) => b.classList.remove("active"));
+        newWrapper.classList.add("active");
 
-          const newInput = document.createElement("input");
-          newInput.type = "color";
-          newInput.className = "custom-color-input";
-          newInput.value = randomColor;
-
-          newWrapper.appendChild(newInput);
-
-          colorPalette.insertBefore(newWrapper, addColorBtn);
-          bindColorEvents();
-
-          document
-            .querySelectorAll(".color-btn, .color-picker-wrapper")
-            .forEach((b) => b.classList.remove("active"));
-          newWrapper.classList.add("active");
-          newWrapper.style.borderStyle = "solid";
-          newWrapper.style.background = randomColor;
-          currentColor = randomColor;
-          if (drawMode === "pen") {
-            ctx.strokeStyle = currentColor;
-            ctx.fillStyle = currentColor;
-          }
+        currentColor = randomColor;
+        if (drawMode === "pen") {
+          ctx.strokeStyle = currentColor;
+          ctx.fillStyle = currentColor;
         }
+
+        bindColorEvents();
+
+        // スマホ環境等でのカラーピッカー未ポップアップ対策として、即座にclickを強制実行してカラーパレットを表示させる
+        setTimeout(() => {
+          newInput.click();
+        }, 50);
       });
 
       bgColorBtns.forEach((btn) => {
